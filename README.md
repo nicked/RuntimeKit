@@ -1,5 +1,8 @@
 # RuntimeKit
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fnicked%2FRuntimeKit%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/nicked/RuntimeKit) [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fnicked%2FRuntimeKit%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/nicked/RuntimeKit)
+
+
 RuntimeKit is a Swift wrapper around the Objective-C runtime.
 It provides an intuitive Swift API for inspecting and manipulating Objective-C classes and protocols dynamically.
 
@@ -69,7 +72,7 @@ print(cls.classMethods) // supportsSecureCoding
 
 
 
-### Iterating over members
+### Iterate over members
 
 Properties, methods, ivars and protocols can be iterated using standard `for-in` loop syntax:
 
@@ -102,7 +105,7 @@ for proto in ObjCProtocol.allProtocols {
 ```
 
 
-### Traversing superclasses
+### Traverse superclasses
 
 Normally only the direct members of the wrapped class are returned.
 To access the members inherited from superclasses, use the `upTo` function:
