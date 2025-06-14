@@ -1,0 +1,6 @@
+version: 1
+builder:
+  configs:
+    - documentation_targets: [RuntimeKit]
+email_addresses:
+  Nick Randall <nicked@gmail.com>
