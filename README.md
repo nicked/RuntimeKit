@@ -10,7 +10,8 @@ RuntimeKit does _not_ add any reflection to Swift-only types.
 It only operates on types that are already visible to the runtime,
 namely classes and protocols defined in Objective-C or exposed from Swift using `@objc`.
 
-See below for [installation instructions](#installation).
+* [Installation instructions](#installation)
+* [API reference](https://swiftpackageindex.com/nicked/RuntimeKit/main/documentation/runtimekit)
 
 
 ## Example
