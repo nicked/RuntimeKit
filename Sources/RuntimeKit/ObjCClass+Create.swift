@@ -24,7 +24,7 @@ extension ObjCClass {
             return nil
         }
         for ivar in ivars {
-            guard class_addIvar(cls, ivar.name, ivar.size, ivar.alignmentShift, ivar.encoding.str) else {
+            guard class_addIvar(cls, ivar.name, ivar.size, ivar.alignmentShift, ivar.encoding.encoded) else {
                 return nil
             }
         }

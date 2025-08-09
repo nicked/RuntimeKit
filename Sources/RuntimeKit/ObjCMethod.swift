@@ -23,8 +23,8 @@ public struct ObjCMethod {
     }
 
     /// Returns an encoding describing this method's parameter and return types.
-    @inlinable public var encoding: TypeEncoding {
-        method_getTypeEncoding(method)!.asTypeEncoding
+    @inlinable public var encoding: MethodTypeEncodings {
+        MethodTypeEncodings(method_getTypeEncoding(method)!.asString) ?? .init()
     }
 
     /// Returns the number of arguments accepted by this method.
@@ -37,8 +37,8 @@ public struct ObjCMethod {
     /// Returns an encoding describing a single parameter type of this method.
     ///
     /// - Note: The first two arguments are always `self` and `_cmd`.
-    @inlinable public func argumentType(at index: Int) -> TypeEncoding? {
-        method_copyArgumentType(method, UInt32(index))?.toTypeEncodingAndFree()
+    @inlinable public func argumentType(at index: Int) -> TypeEncoding {
+        method_copyArgumentType(method, UInt32(index))?.toTypeEncodingAndFree() ?? .empty
     }
 
     /// Returns the encoding of this method's return type.

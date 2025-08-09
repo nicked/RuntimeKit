@@ -132,8 +132,8 @@ final class ObjCClassTests: XCTestCase {
             clsName,
             superclass: nsObjCls,
             ivars: [
-                .init(name: "_bool", encoding: "c"),
-                .init(name: "_obj", encoding: "@"),
+                .init(name: "_bool", encoding: .char),
+                .init(name: "_obj", encoding: .id),
             ]
         ))
         XCTAssertEqual(ObjCClass(named: clsName), newCls)
@@ -141,10 +141,10 @@ final class ObjCClassTests: XCTestCase {
         let ivars = Array(newCls.ivars)
         XCTAssertEqual(ivars.count, 2)
         XCTAssertEqual(ivars.first?.name, "_bool")
-        XCTAssertEqual(ivars.first?.encoding, "c")
+        XCTAssertEqual(ivars.first?.encoding, .char)
         XCTAssertEqual(ivars.first?.offset, 8)
         XCTAssertEqual(ivars.last?.name, "_obj")
-        XCTAssertEqual(ivars.last?.encoding, "@")
+        XCTAssertEqual(ivars.last?.encoding, .id)
         XCTAssertEqual(ivars.last?.offset, 16)
 
         XCTAssertEqual(newCls.instanceSize, 24)
@@ -169,7 +169,7 @@ final class ObjCClassTests: XCTestCase {
             let impl: @convention(block) () -> Void = {
                 exp.fulfill()
             }
-            let ok = cls.methods.add(with: sel, types: "v@:", block: impl)
+            let ok = cls.methods.add(with: sel, types: .method(), block: impl)
             XCTAssert(ok)
             XCTAssert(inst.responds(to: sel))
             _ = inst.perform(sel)
@@ -271,8 +271,3 @@ class ExampleSubClass: ExampleClass, NSCoding {
 }
 
 
-extension TypeEncoding {
-    static let int = "i" as Self
-    static let double = "d" as Self
-    static let longLong = "q" as Self
-}

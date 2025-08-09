@@ -25,7 +25,12 @@ public struct ObjCProperty {
     ///
     /// To access multiple attributes, it is best to assign this to a variable since it parses an attribute string on creation.
     @inlinable public var attributes: Attributes {
-        Attributes(of: prop)
+        Attributes(prop)
+    }
+
+    /// Contains the name and parsed attributes of the property.
+    public var details: Details {
+        Details(name: name, attributes: attributes)
     }
 }
 
@@ -38,6 +43,17 @@ extension ObjCProperty {
         public init(name: String, attributes: Attributes) {
             self.name = name
             self.attributes = attributes
+        }
+
+        /// Returns the getter selector of the property, either a custom getter or a default getter which is the same as the property name.
+        public var getter: Selector {
+            Selector(attributes.customGetter ?? name)
+        }
+
+        /// Returns the setter selector of the property, either a custom setter or a default setter derived from the property name.
+        /// - Note: The returned selector will not actually exist if the property is read-only.
+        public var setter: Selector {
+            Selector(attributes.customSetter ?? "set\(name.prefix(1).uppercased())\(name.dropFirst()):")
         }
     }
 }

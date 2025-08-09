@@ -29,12 +29,12 @@ public extension RuntimeList where F == ObjCClass.Methods {
     /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
     /// - Parameter types: The full method encoding including the return type, receiver, selector and argument types.
     /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    func add(with selector: Selector, types: TypeEncoding, imp: IMP, canReplace: Bool = false) -> Bool {
+    func add(with selector: Selector, types: MethodTypeEncodings, imp: IMP, canReplace: Bool = false) -> Bool {
         if canReplace {
-            class_replaceMethod(funcs.cls.cls, selector, imp, types.str)
+            class_replaceMethod(funcs.cls.cls, selector, imp, types.encoded)
             return true
         } else {
-            return class_addMethod(funcs.cls.cls, selector, imp, types.str)
+            return class_addMethod(funcs.cls.cls, selector, imp, types.encoded)
         }
     }
 
@@ -46,7 +46,7 @@ public extension RuntimeList where F == ObjCClass.Methods {
     /// - Parameter block: A closure that accepts an instance of this class (the receiver) as the first argument.
     ///     It must be declared with `@convention(block)`.
     /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    func add(with selector: Selector, types: TypeEncoding, block: Any, canReplace: Bool = false) -> Bool {
+    func add(with selector: Selector, types: MethodTypeEncodings, block: Any, canReplace: Bool = false) -> Bool {
         add(with: selector, types: types, imp: imp_implementationWithBlock(block), canReplace: canReplace)
     }
 

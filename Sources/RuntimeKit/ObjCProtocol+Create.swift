@@ -36,7 +36,7 @@ extension ObjCProtocol {
             }
         }
         for method in methods {
-            protocol_addMethodDescription(proto, method.selector, method.encoding?.str, method.isRequired, method.isInstanceMethod)
+            protocol_addMethodDescription(proto, method.selector, method.encoding?.encoded, method.isRequired, method.isInstanceMethod)
         }
         for other in protocols {
             protocol_addProtocol(proto, other.proto)
@@ -49,11 +49,11 @@ extension ObjCProtocol {
     /// Details about a single protocol method.
     public struct MethodDetails: Equatable, CustomStringConvertible, CustomDebugStringConvertible {
         public let selector: Selector
-        public let encoding: TypeEncoding?
+        public let encoding: MethodTypeEncodings?
         public let isRequired: Bool
         public let isInstanceMethod: Bool
 
-        public init(selector: Selector, encoding: TypeEncoding?, isRequired: Bool, isInstanceMethod: Bool) {
+        public init(selector: Selector, encoding: MethodTypeEncodings?, isRequired: Bool, isInstanceMethod: Bool) {
             self.selector = selector
             self.encoding = encoding
             self.isRequired = isRequired
@@ -66,13 +66,13 @@ extension ObjCProtocol {
                 return nil
             }
             self.selector = selector
-            self.encoding = desc.types.map { TypeEncoding(String(cString: $0)) }
+            self.encoding = desc.types.flatMap { MethodTypeEncodings(String(cString: $0)) }
             self.isRequired = isRequired
             self.isInstanceMethod = isInstanceMethod
         }
 
         public var description: String {
-            "\(selector) = \(encoding?.str ?? "??")"
+            "\(selector) = \(encoding?.description ?? "")"
         }
 
         public var debugDescription: String {

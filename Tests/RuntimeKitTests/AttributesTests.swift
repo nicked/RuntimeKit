@@ -57,8 +57,14 @@ final class AttributesTests: XCTestCase {
 
     func testAttribsSplitFull() {
         let attrs = ObjCProperty.Attributes(
-            nonAtomic: true, readOnly: true, dynamic: true, setterType: .copy,
-            encoding: "{YorkshireTeaStruct=\"pot\"i\"lady\"c}", getter: "yorkshireTea", setter: "setYorkshireTea", ivarName: "_yorkshireTea"
+            nonAtomic: true,
+            readOnly: true,
+            dynamic: true,
+            setterType: .copy,
+            encoding: TypeEncoding(#"{YorkshireTeaStruct="pot"i"lady"c}"#)!,
+            customGetter: "yorkshireTea",
+            customSetter: "setYorkshireTea",
+            ivarName: "_yorkshireTea"
         )
 
         XCTAssertEqual(attrs.asDict(), [
@@ -84,7 +90,7 @@ final class AttributesTests: XCTestCase {
 
 extension ObjCProperty.Attributes {
     func asDict() -> [String: String] {
-        Dictionary(uniqueKeysWithValues: attributeList().map { ($0.code.rawValue, $0.value) } )
+        Dictionary(uniqueKeysWithValues: attributeList().map { ($0.code, $0.value) } )
     }
 }
 

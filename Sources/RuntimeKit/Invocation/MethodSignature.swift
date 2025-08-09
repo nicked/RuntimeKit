@@ -16,9 +16,9 @@ public struct MethodSignature {
         self.inner = inner
     }
 
-    /// Returns an MethodSignature for the given Objective-C method type string.
-    public init?(with objCTypes: TypeEncoding) {
-        guard let obj = Self.castCls.signature(withObjCTypes: objCTypes.str) else {
+    /// Returns a MethodSignature for the given method type encodings.
+    public init?(with typeEncodings: MethodTypeEncodings) {
+        guard let obj = Self.castCls.signature(withObjCTypes: typeEncodings.encoded) else {
             return nil
         }
         self.inner = obj

@@ -13,7 +13,7 @@ extension UnsafePointer<CChar> {
     }
 
     @inlinable var asTypeEncoding: TypeEncoding {
-        TypeEncoding(asString)
+        TypeEncoding(asString) ?? .empty
     }
 
     /// Returns the current pointer, but moves it to the start of the next C string
@@ -39,6 +39,6 @@ extension UnsafeMutablePointer<CChar> {
     }
 
     @inlinable func toTypeEncodingAndFree() -> TypeEncoding {
-        TypeEncoding(toStringAndFree())
+        TypeEncoding(toStringAndFree()) ?? .empty
     }
 }

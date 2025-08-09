@@ -10,51 +10,58 @@ import Foundation
 
 extension ObjCProperty {
 
-    struct Attribute: LosslessStringConvertible {
-        let code: Code
-        let value: String
-
-        enum Code: String {
-            case type = "T"
-            case readOnly = "R"
-            case copy = "C"
-            case retain = "&"
-            case nonAtomic = "N"
-            case getter = "G"
-            case setter = "S"
-            case dynamic = "D"
-            case weak = "W"
-            case ivar = "V"
-        }
-
-        init(_ code: Code, _ value: String = "") {
-            self.code = code
-            self.value = value
-        }
-
-        init?(_ attribute: objc_property_attribute_t) {
-            guard let code = Code.init(rawValue: attribute.name.asString) else {
-                assertionFailure("Unknown attribute: \(attribute.name.asString) \(attribute.value.asString)")
-                return nil
-            }
-            self.code = code
-            self.value = attribute.value.asString
-        }
+    enum Attribute: LosslessStringConvertible {
+        case type(TypeEncoding)
+        case nonAtomic
+        case readOnly
+        case copy
+        case retain
+        case weak
+        case dynamic
+        case getter(String)
+        case setter(String)
+        case ivar(String)
 
         init?(_ description: String) {
-            self.init(Substring(description))
-        }
+            guard let first = description.first else { return nil }
+            let rest = String(description.dropFirst())
 
-        init?(_ substring: Substring) {
-            guard let char = substring.first, let code = Code(rawValue: String(char)) else {
-                return nil
+            switch first {
+                case "T": self = .type(TypeEncoding(rest) ?? .empty)
+                case "N": self = .nonAtomic
+                case "R": self = .readOnly
+                case "C": self = .copy
+                case "&": self = .retain
+                case "W": self = .weak
+                case "D": self = .dynamic
+                case "G" where !rest.isEmpty: self = .getter(rest)
+                case "S" where !rest.isEmpty: self = .setter(rest)
+                case "V" where !rest.isEmpty: self = .ivar(rest)
+                default: return nil
             }
-            self.code = code
-            self.value = String(substring.dropFirst())
         }
 
         var description: String {
-            "\(code.rawValue)\(value)"
+            switch self {
+                case .type(let enc):    "T\(enc)"
+                case .nonAtomic:        "N"
+                case .readOnly:         "R"
+                case .copy:             "C"
+                case .retain:           "&"
+                case .weak:             "W"
+                case .dynamic:          "D"
+                case .getter(let name): "G\(name)"
+                case .setter(let name): "S\(name)"
+                case .ivar(let name):   "V\(name)"
+            }
+        }
+
+        var code: String {
+            String(description.prefix(1))
+        }
+
+        var value: String {
+            String(description.dropFirst())
         }
     }
 }
@@ -62,118 +69,84 @@ extension ObjCProperty {
 extension ObjCProperty {
 
     /// Represents a set of property attributes, can be converted to and from an attributes string.
-    public struct Attributes: Equatable, LosslessStringConvertible {
-        public let nonAtomic: Bool
-        public let readOnly: Bool
-        public let dynamic: Bool
-        public let setterType: SetterType
-        public let encoding: TypeEncoding
-        public let getter: String?
-        public let setter: String?
-        public let ivarName: String?
+    public struct Attributes: Equatable, CustomStringConvertible {
+        /// Whether the property has the `nonatomic` attribute.
+        public var nonAtomic: Bool = false
+        /// Whether the property has the `readonly` attribute.
+        public var readOnly: Bool = false
+        /// Whether the property has the `dynamic` attribute.
+        public var dynamic: Bool = false
+        /// The setter behaviour of the property (`assign`, `strong`, `copy` or `weak`).
+        public var setterType: SetterType = .assign
+        /// The type encoding of the property.
+        public var encoding: TypeEncoding
+        /// The name of the custom property getter.
+        public var customGetter: String?
+        /// The name of the custom property setter.
+        public var customSetter: String?
+        /// The name of the backing instance variable.
+        public var ivarName: String?
 
         /// Parses attributes from a runtime property.
-        public init(of prop: objc_property_t) {
+        public init(_ prop: objc_property_t) {
             self = Self(property_getAttributes(prop)!.asString)
-
         }
 
         /// Parses attributes from a property description string, e.g. "T@,R,V_name"
-        public init(_ description: String) {
-            var attribs: [Attribute] = []
-            let parts = description.split(separator: ",")
-            for part in parts {
-                if let attr = Attribute(part) {
-                    attribs.append(attr)
-                } else {
-                    // Sometimes a type encoding can contain commas even though it shouldn't, e.g.
-                    //  "T{vector<long long, std::allocator<long long>>=^q^q{__compressed_pair<long long *, std::allocator<long long>>=^q}}"
-                    // So if we get an attribute that can't be parsed, append it to the previous attribute value
-                    if let prev = attribs.popLast() {
-                        attribs.append(Attribute(prev.code, "\(prev.value),\(part)"))
-                    }
-                }
-            }
+        init(_ attribsStr: String) {
+            var attribsStr = attribsStr
+            self.encoding = TypeEncoding(propertyAttributes: &attribsStr) ?? .empty
 
-            self = Self(attribs: attribs)
-        }
-
-        private init(attribs: [Attribute]) {
-            var nonAtomic = false
-            var readOnly = false
-            var dynamic = false
-            var setterType: SetterType = .assign
-            var encoding = TypeEncoding()
-            var getter: String? = nil
-            var setter: String? = nil
-            var ivarName: String? = nil
+            let attribs = attribsStr
+                .split(separator: ",")
+                .map(String.init)
+                .compactMap(Attribute.init)
 
             for attrib in attribs {
-                switch attrib.code {
+                switch attrib {
                     case .readOnly: readOnly = true
                     case .nonAtomic: nonAtomic = true
                     case .dynamic: dynamic = true
                     case .copy: setterType = .copy
                     case .retain: setterType = .strong
                     case .weak: setterType = .weak
-                    case .type: encoding = TypeEncoding(attrib.value)
-                    case .getter: getter = attrib.value
-                    case .setter: setter = attrib.value
-                    case .ivar: ivarName = attrib.value
+                    case .type(let enc): encoding = enc
+                    case .getter(let name): customGetter = name
+                    case .setter(let name): customSetter = name
+                    case .ivar(let name): ivarName = name
                 }
             }
-
-            self = Attributes(
-                nonAtomic: nonAtomic, readOnly: readOnly, dynamic: dynamic, setterType: setterType,
-                encoding: encoding, getter: getter, setter: setter, ivarName: ivarName
-            )
         }
 
         /// Creates a set of property attributes.
         public init(
             nonAtomic: Bool = false, readOnly: Bool = false, dynamic: Bool = false, setterType: SetterType = .assign,
-            encoding: TypeEncoding, getter: String? = nil, setter: String? = nil, ivarName: String? = nil
+            encoding: TypeEncoding, customGetter: String? = nil, customSetter: String? = nil, ivarName: String? = nil
         ) {
             self.nonAtomic = nonAtomic
             self.readOnly = readOnly
             self.dynamic = dynamic
             self.setterType = setterType
             self.encoding = encoding
-            self.getter = getter
-            self.setter = setter
+            self.customGetter = customGetter
+            self.customSetter = customSetter
             self.ivarName = ivarName
         }
 
         func attributeList() -> [Attribute] {
-            var attribs = [Attribute(.type, encoding.str)]
-            if readOnly {
-                attribs.append(Attribute(.readOnly))
-            }
-            if nonAtomic {
-                attribs.append(Attribute(.nonAtomic))
-            }
-            if dynamic {
-                attribs.append(Attribute(.dynamic))
-            }
+            var attribs: [Attribute] = [.type(encoding)]
+            if readOnly     { attribs.append(.readOnly) }
+            if nonAtomic    { attribs.append(.nonAtomic) }
+            if dynamic      { attribs.append(.dynamic) }
             switch setterType {
-                case .assign:
-                    break
-                case .strong:
-                    attribs.append(Attribute(.retain))
-                case .weak:
-                    attribs.append(Attribute(.weak))
-                case .copy:
-                    attribs.append(Attribute(.copy))
+                case .assign:   break
+                case .strong:   attribs.append(.retain)
+                case .weak:     attribs.append(.weak)
+                case .copy:     attribs.append(.copy)
             }
-            if let getter {
-                attribs.append(Attribute(.getter, getter))
-            }
-            if let setter {
-                attribs.append(Attribute(.setter, setter))
-            }
-            if let ivarName {
-                attribs.append(Attribute(.ivar, ivarName))
-            }
+            if let customGetter { attribs.append(.getter(customGetter)) }
+            if let customSetter { attribs.append(.setter(customSetter)) }
+            if let ivarName     { attribs.append(.ivar(ivarName)) }
             return attribs
         }
 
@@ -194,7 +167,7 @@ extension ObjCProperty {
             let attribs = attributeList()
 
             // Join all the attributes into a single array of null-terminated C strings
-            let cStrings = attribs.flatMap { $0.code.rawValue.utf8CString + $0.value.utf8CString }
+            let cStrings = attribs.flatMap { $0.code.utf8CString + $0.value.utf8CString }
 
             return cStrings.withUnsafeBufferPointer {
                 var strPtr = $0.baseAddress!

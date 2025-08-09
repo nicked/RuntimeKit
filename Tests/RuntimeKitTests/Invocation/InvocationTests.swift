@@ -11,13 +11,13 @@ import XCTest
 final class InvocationTests: XCTestCase {
 
     func testMethodSignature() {
-        let signature = MethodSignature(with: "v@:")!
+        let signature = MethodSignature(with: .method())!
         let invocation = Invocation(methodSignature: signature)
         XCTAssertEqual(invocation.methodSignature, signature)
     }
 
     func testTarget() {
-        let signature = MethodSignature(with: "v@:")!
+        let signature = MethodSignature(with: .method())!
         let invocation = Invocation(methodSignature: signature)
         XCTAssertNil(invocation.target)
         XCTAssertNil(invocation.getArgument(at: 0, as: AnyObject?.self))
@@ -32,7 +32,7 @@ final class InvocationTests: XCTestCase {
     }
 
     func testSelector() {
-        let signature = MethodSignature(with: "v@:")!
+        let signature = MethodSignature(with: .method())!
         let invocation = Invocation(methodSignature: signature)
         XCTAssertNil(invocation.selector)
         XCTAssertNil(invocation.getArgument(at: 1, as: Selector?.self))
@@ -49,7 +49,8 @@ final class InvocationTests: XCTestCase {
     }
 
     func testArguments() {
-        let signature = MethodSignature(with: "v@:@c{CGSize=dd}")!
+        let types = MethodTypeEncodings.method(params: .id, .char, .struct("CGSize", .double, .double))
+        let signature = MethodSignature(with: types)!
         let invocation = Invocation(methodSignature: signature)
 
         XCTAssertNil(invocation.getArgument(at: 2, as: AnyClass?.self))
@@ -75,7 +76,7 @@ final class InvocationTests: XCTestCase {
     }
 
     func testRetainArguments() {
-        let signature = MethodSignature(with: "v@:@")!
+        let signature = MethodSignature(with: .setter(for: .id))!
         let invocation = Invocation(methodSignature: signature)
 
         XCTAssertFalse(invocation.argumentsRetained)
@@ -119,7 +120,7 @@ final class InvocationTests: XCTestCase {
     }
 
     func testReturnValue() {
-        var signature = MethodSignature(with: "@@:")!
+        var signature = MethodSignature(with: .getter(for: .id))!
         var invocation = Invocation(methodSignature: signature)
 
         XCTAssertNil(invocation.returnValue(as: AnyObject?.self))
@@ -128,7 +129,7 @@ final class InvocationTests: XCTestCase {
         invocation.setReturnValue(nil as AnyObject?)
         XCTAssertNil(invocation.returnValue(as: AnyObject?.self))
 
-        signature = MethodSignature(with: "{CGSize=dd}@:")!
+        signature = MethodSignature(with: .getter(for: .struct("CGSize", .double, .double)))!
         invocation = Invocation(methodSignature: signature)
         
         let size = CGSize(width: .min, height: .max)

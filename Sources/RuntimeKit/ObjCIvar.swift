@@ -25,7 +25,7 @@ public struct ObjCIvar {
     /// The type encoding of this instance variable.
     /// Backing ivars of Swift properties will return an empty encoding.
     @inlinable public var encoding: TypeEncoding {
-        ivar_getTypeEncoding(ivar)?.asTypeEncoding ?? TypeEncoding()
+        ivar_getTypeEncoding(ivar)?.asTypeEncoding ?? .empty
     }
 
     /// The offset of this instance variable from the start of the class backing struct in bytes.

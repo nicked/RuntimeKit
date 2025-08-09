@@ -145,13 +145,13 @@ let body: @convention(block) (AnyClass) -> Int = { _ in
 }
 
 // Dynamically add it to the class
-cls.methods.add(with: "foo", types: "q@:", block: body)
+cls.methods.add(with: "foo", types: .getter(for: .longLong), block: body)
 
 // Add a corresponding property (not strictly necessary)
 cls.properties.add("foo", attributes: .init(
     nonAtomic: true,
     readOnly: true,
-    encoding: "q"
+    encoding: .longLong
 ))
 
 // Now this will succeed
@@ -194,6 +194,22 @@ let newCls = ObjCClass.create(
 
 // add any properties, methods, protocols...
 ```
+
+### Examine type encodings
+
+The included `TypeEncoding` enum can fully parse even the most complex of Objective-C [type encodings](https://ko9.org/posts/encode-types/).
+For example, the encoding `^{CGPoint="x"d"y"d}` can be parsed into:
+
+```swift
+.pointer(.struct(name: "CGPoint", [("x", .double), ("y", .double)]))
+```
+
+A parsed `TypeEncoding` can also be re-encoded into an encoding string which is identical to the original.
+This lossless round-trip encoding has been tested on 660,000+ type encodings from all the classes and protocols in macOS.
+If you find an encoding from the runtime which cannot be parsed successfully, please [file a bug](https://github.com/nicked/RuntimeKit/issues/new).
+
+The related `MethodTypeEncodings` struct represents the types encoded in a method signature.
+
 
 ### Runtime helpers
 

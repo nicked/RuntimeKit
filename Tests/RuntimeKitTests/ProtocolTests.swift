@@ -77,14 +77,14 @@ final class ProtocolTests: XCTestCase {
         XCTAssertNil(proto.optionalMethods[requiredMethod])
         let rm = try XCTUnwrap(proto.requiredMethods[requiredMethod])
         XCTAssertEqual(rm.selector, requiredMethod)
-        XCTAssertEqual(rm.encoding, "v16@0:8")
+        XCTAssertEqual(rm.encoding, .method())
         XCTAssert(rm.isRequired)
         XCTAssert(rm.isInstanceMethod)
 
         XCTAssertNil(proto.requiredMethods[optionalMethod])
         let om = try XCTUnwrap(proto.optionalMethods[optionalMethod])
         XCTAssertEqual(om.selector, optionalMethod)
-        XCTAssertEqual(om.encoding, "v16@0:8")
+        XCTAssertEqual(om.encoding, .method())
         XCTAssertFalse(om.isRequired)
         XCTAssert(om.isInstanceMethod)
 
@@ -98,13 +98,13 @@ final class ProtocolTests: XCTestCase {
     func testClassMethods() throws {
         let rm = try XCTUnwrap(proto.requiredClassMethods[requiredClassMethod])
         XCTAssertEqual(rm.selector, requiredClassMethod)
-        XCTAssertEqual(rm.encoding, "v16@0:8")
+        XCTAssertEqual(rm.encoding, .method())
         XCTAssertTrue(rm.isRequired)
         XCTAssertFalse(rm.isInstanceMethod)
 
         let om = try XCTUnwrap(proto.optionalClassMethods[optionalClassMethod])
         XCTAssertEqual(om.selector, optionalClassMethod)
-        XCTAssertEqual(om.encoding, "v16@0:8")
+        XCTAssertEqual(om.encoding, .method())
         XCTAssertFalse(om.isRequired)
         XCTAssertFalse(om.isInstanceMethod)
 
@@ -138,8 +138,8 @@ final class ProtocolTests: XCTestCase {
             attributes: .init(nonAtomic: true, dynamic: true, encoding: .double)
         )
 
-        let method1 = ObjCProtocol.MethodDetails(selector: Selector(("method1")), encoding: "", isRequired: true, isInstanceMethod: true)
-        let method2 = ObjCProtocol.MethodDetails(selector: Selector(("method2")), encoding: "", isRequired: false, isInstanceMethod: false)
+        let method1 = ObjCProtocol.MethodDetails(selector: Selector(("method1")), encoding: .method(), isRequired: true, isInstanceMethod: true)
+        let method2 = ObjCProtocol.MethodDetails(selector: Selector(("method2")), encoding: .method(), isRequired: false, isInstanceMethod: false)
 
         let proto = try XCTUnwrap(
             ObjCProtocol.create(name, properties: [prop1], classProperties: [prop2], methods: [method1, method2], protocols: [ObjCProtocol(NSCopying.self)])
