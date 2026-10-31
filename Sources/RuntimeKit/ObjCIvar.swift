@@ -43,7 +43,7 @@ extension ObjCIvar {
         let size: Int
         let alignment: Int
 
-        public init(name: String, encoding: TypeEncoding) {
+        public init(_ name: String, encoding: TypeEncoding) {
             self.name = name
             self.encoding = encoding
             (self.size, self.alignment) = encoding.sizeAndAlignment

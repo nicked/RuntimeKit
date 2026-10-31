@@ -30,7 +30,7 @@ public struct ObjCProperty {
 
     /// Contains the name and parsed attributes of the property.
     public var details: Details {
-        Details(name: name, attributes: attributes)
+        Details(name, attributes: attributes)
     }
 }
 
@@ -40,7 +40,7 @@ extension ObjCProperty {
         let name: String
         let attributes: Attributes
 
-        public init(name: String, attributes: Attributes) {
+        public init(_ name: String, attributes: Attributes) {
             self.name = name
             self.attributes = attributes
         }

@@ -19,12 +19,12 @@ final class ProtocolTests: XCTestCase {
 
     func testProperties() {
         let rp = ObjCProperty.Details(
-            name: "requiredProp",
+            "requiredProp",
             attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
         )
 
         let op = ObjCProperty.Details(
-            name: "optionalProp",
+            "optionalProp",
             attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
         )
 
@@ -39,12 +39,12 @@ final class ProtocolTests: XCTestCase {
 
     func testClassProperties() {
         let rp = ObjCProperty.Details(
-            name: "requiredClassProp",
+            "requiredClassProp",
             attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
         )
 
         let op = ObjCProperty.Details(
-            name: "optionalClassProp",
+            "optionalClassProp",
             attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
         )
 
@@ -130,11 +130,11 @@ final class ProtocolTests: XCTestCase {
         let name = "testCreation_Protocol"
 
         let prop1 = ObjCProperty.Details(
-            name: "prop1",
+            "prop1",
             attributes: .init(readOnly: true, encoding: .double)
         )
         let prop2 = ObjCProperty.Details(
-            name: "prop2",
+            "prop2",
             attributes: .init(nonAtomic: true, dynamic: true, encoding: .double)
         )
 

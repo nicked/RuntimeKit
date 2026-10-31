@@ -165,7 +165,7 @@ extension Substring {
             }
             guard parseChar(endChar) else { throw ParseError.unexpectedEnd }
         }
-        return isStruct ? .struct(name: name, fields) : .union(name: name, fields)
+        return isStruct ? .struct(name, fields) : .union(name, fields)
     }
 
     /// Attempts to parse the class name and protocols of an object type, after the `@` has been parsed.
@@ -183,7 +183,7 @@ extension Substring {
         // Keep an empty name so that `@""` re-encodes as `@""` and not as `@`.
         // This occurs in struct fields such as `"__end_"^@""{?=...}`.
         guard !names.isEmpty else {
-            return .object(name: "")
+            return .object("")
         }
         var clsName: String?
         var protocols: [String] = []
@@ -199,7 +199,7 @@ extension Substring {
                 clsName = String(part)
             }
         }
-        return .object(name: clsName, protocols: protocols)
+        return .object(clsName, protocols: protocols)
     }
 
     /// Attempts to parse the parameter details of a block type, after the block type encoding `@?` has been parsed.
