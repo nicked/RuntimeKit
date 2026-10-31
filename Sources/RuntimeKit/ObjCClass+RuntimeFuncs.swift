@@ -115,7 +115,9 @@ public extension ObjCClass {
         }
 
         @inlinable public func lookup(name: String) -> Protocol? {
-            let proto = objc_getProtocol(name)
+            guard let proto = objc_getProtocol(name) else {
+                return nil
+            }
             return class_conformsToProtocol(cls.cls, proto) ? proto : nil
         }
 
