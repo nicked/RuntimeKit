@@ -157,6 +157,16 @@ final class ObjCClassTests: XCTestCase {
         newCls.dispose()
     }
 
+    func testForEachRethrows() {
+        struct StopError: Error {}
+        var visited = 0
+        XCTAssertThrowsError(try cls.methods.forEach { _ in
+            visited += 1
+            throw StopError()
+        })
+        XCTAssertEqual(visited, 1)
+    }
+
     func testSuperclasses() {
         XCTAssertEqualSeq(subCls.superclasses(), [cls, nsObjCls])
         XCTAssertEqualSeq(subCls.superclasses(includeSelf: true), [subCls, cls, nsObjCls])

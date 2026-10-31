@@ -33,14 +33,14 @@ public struct RuntimeList<F: RuntimeFuncs>: Sequence {
     }
 
     /// Calls the given closure on each element in the list.
-    /// 
+    ///
     /// This is slightly faster than using a `for-in` loop and as fast as calling the runtime C functions directly.
     @inlinable public func forEach(_ body: (Element) throws -> Void) rethrows {
         let buffer = createBuffer()
+        defer { buffer.free() }
         for item in buffer {
             try body(funcs.wrap(item))
         }
-        buffer.free()
     }
 
     @_documentation(visibility: internal)
