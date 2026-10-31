@@ -40,7 +40,12 @@ public extension RuntimeList where F == ObjCClass.Methods {
     ///     It must be declared with `@convention(block)`.
     /// - Returns: Returns `false` if this class already has a method with the same selector.
     func add(_ selector: Selector, types: MethodTypeEncodings, block: Any) -> Bool {
-        add(selector, types: types, imp: imp_implementationWithBlock(block))
+        let imp = imp_implementationWithBlock(block)
+        guard add(selector, types: types, imp: imp) else {
+            imp_removeBlock(imp)
+            return false
+        }
+        return true
     }
 
     /// Adds or replaces a method on this class.
