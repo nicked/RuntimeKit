@@ -187,8 +187,8 @@ let newCls = ObjCClass.create(
     "MyClass",
     superclass: cls,
     ivars: [
-        .init(name: "_foo", encoding: "i"),
-        .init(name: "_bar", encoding: "c"),
+        .init("_foo", encoding: .int),
+        .init("_bar", encoding: .char),
     ]
 )
 
@@ -201,7 +201,10 @@ The included `TypeEncoding` enum can fully parse even the most complex of Object
 For example, the encoding `^{CGPoint="x"d"y"d}` can be parsed into:
 
 ```swift
-.pointer(.struct(name: "CGPoint", [("x", .double), ("y", .double)]))
+.pointer(to: .struct("CGPoint", [
+    .init("x", type: .double),
+    .init("y", type: .double),
+]))
 ```
 
 A parsed `TypeEncoding` can also be re-encoded into an encoding string which is identical to the original.

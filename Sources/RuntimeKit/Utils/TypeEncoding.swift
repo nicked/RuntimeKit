@@ -44,11 +44,11 @@ public indirect enum TypeEncoding: Equatable {
     case `class`
     case selector
     case unknown
-    case object(name: String? = nil, protocols: [String] = [])
+    case object(String? = nil, protocols: [String] = [])
     case block([TypeEncoding]?)
     case array(count: Int, TypeEncoding?)
-    case `struct`(name: String, [Field]?)
-    case union(name: String, [Field]?)
+    case `struct`(String, [Field]?)
+    case union(String, [Field]?)
     case bitfield(Int)
     case pointer(to: TypeEncoding?)
 
@@ -69,7 +69,7 @@ public indirect enum TypeEncoding: Equatable {
     public static let id = Self.object()
 
     public static func `struct`(_ name: String, _ types: TypeEncoding...) -> Self {
-        .struct(name: name, types.map { Field(type: $0) })
+        .struct(name, types.map { Field(type: $0) })
     }
 }
 
@@ -161,7 +161,7 @@ extension TypeEncoding {
         public let name: String?
         public let type: TypeEncoding?
 
-        public init(name: String? = nil, type: TypeEncoding?) {
+        public init(_ name: String? = nil, type: TypeEncoding?) {
             self.name = name
             self.type = type
         }
@@ -172,7 +172,7 @@ extension TypeEncoding {
             if name == nil, type == nil {
                 return nil
             }
-            self = Field(name: name, type: type)
+            self = Field(name, type: type)
         }
 
         public var description: String {

@@ -12,12 +12,12 @@ import XCTest
 final class ObjCClassTests: XCTestCase {
 
     let cls = ObjCClass(ExampleClass.self)
-    let prop = ObjCProperty.Details(name: "exampleProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleProp"))
-    let clsProp = ObjCProperty.Details(name: "exampleClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
+    let prop = ObjCProperty.Details("exampleProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleProp"))
+    let clsProp = ObjCProperty.Details("exampleClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
 
     let subCls = ObjCClass(ExampleSubClass.self)
-    let subProp = ObjCProperty.Details(name: "exampleSubProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleSubProp"))
-    let subClsProp = ObjCProperty.Details(name: "exampleSubClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
+    let subProp = ObjCProperty.Details("exampleSubProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleSubProp"))
+    let subClsProp = ObjCProperty.Details("exampleSubClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
 
     let nsObjCls = ObjCClass(NSObject.self)
 
@@ -132,8 +132,8 @@ final class ObjCClassTests: XCTestCase {
             clsName,
             superclass: nsObjCls,
             ivars: [
-                .init(name: "_bool", encoding: .char),
-                .init(name: "_obj", encoding: .id),
+                .init("_bool", encoding: .char),
+                .init("_obj", encoding: .id),
             ]
         ))
         XCTAssertEqual(ObjCClass(named: clsName), newCls)
@@ -229,7 +229,7 @@ func XCTAssertEqualSeq<T: Sequence, U: Sequence>(
 
 extension ObjCProperty {
     var details: Details {
-        Details(name: name, attributes: attributes)
+        Details(name, attributes: attributes)
     }
 }
 
