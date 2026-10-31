@@ -145,6 +145,18 @@ final class ObjCClassTests: XCTestCase {
         XCTAssertEqual(SwizzleBaseClass().replacement(), "replacement")
     }
 
+    func testCreateClassWithDuplicateIvars() throws {
+        let clsName = "DuplicateIvarClass"
+        let ivar = ObjCIvar.Details("_dup", type: .int)
+
+        XCTAssertNil(ObjCClass.create(clsName, superclass: nsObjCls, ivars: [ivar, ivar]))
+        XCTAssertNil(ObjCClass(named: clsName))
+
+        // The failed attempt must not reserve the class name
+        let newCls = try XCTUnwrap(ObjCClass.create(clsName, superclass: nsObjCls, ivars: [ivar]))
+        newCls.dispose()
+    }
+
     func testSuperclasses() {
         XCTAssertEqualSeq(subCls.superclasses(), [cls, nsObjCls])
         XCTAssertEqualSeq(subCls.superclasses(includeSelf: true), [subCls, cls, nsObjCls])

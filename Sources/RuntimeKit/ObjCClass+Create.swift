@@ -18,13 +18,14 @@ extension ObjCClass {
     /// - Parameter superclass: The class to use as the new class's superclass, or `nil` to create a new root class.
     /// - Parameter ivars: Instance variables to add to the new class.
     /// - Parameter extraBytes: The number of bytes to allocate for indexed ivars at the end of the class and metaclass objects. This should usually be 0.
-    /// - Returns: Returns `false` if the class name already exists or any duplicate ivar names were passed in.
+    /// - Returns: Returns `nil` if the class name already exists or any duplicate ivar names were passed in.
     public static func create(_ name: String, superclass: ObjCClass?, ivars: [ObjCIvar.Details], extraBytes: Int = 0) -> ObjCClass? {
         guard let cls = objc_allocateClassPair(superclass?.cls, name, extraBytes) else {
             return nil
         }
         for ivar in ivars {
             guard class_addIvar(cls, ivar.name, ivar.size, ivar.alignmentShift, ivar.type.encoded) else {
+                objc_disposeClassPair(cls)
                 return nil
             }
         }
