@@ -113,6 +113,24 @@ final class ObjCClassTests: XCTestCase {
         ])
     }
 
+    func testMetaclassEquality() {
+        XCTAssertNotEqual(cls.metaClass, cls)
+        XCTAssertNotEqual(nsObjCls.metaClass, nsObjCls)
+        XCTAssertEqual(cls.metaClass, ObjCClass(ExampleClass.self).metaClass)
+    }
+
+    func testMetaclassSuperclasses() {
+        // The superclass of the root metaclass is the root class
+        XCTAssertEqualSeq(nsObjCls.metaClass.superclasses(), [nsObjCls])
+        XCTAssertEqualSeq(subCls.metaClass.superclasses(excluding: nsObjCls.metaClass), [cls.metaClass])
+
+        // upTo accepts either the class or its metaclass for class member lists
+        XCTAssertEqualSeq(
+            subCls.classMethods.upTo(nsObjCls.metaClass).map(\.selector),
+            subCls.classMethods.upTo(nsObjCls).map(\.selector)
+        )
+    }
+
     func testSuperclasses() {
         XCTAssertEqualSeq(subCls.superclasses(), [cls, nsObjCls])
         XCTAssertEqualSeq(subCls.superclasses(includeSelf: true), [subCls, cls, nsObjCls])
