@@ -43,6 +43,17 @@ final class TypeEncodingTests: XCTestCase {
     }
 
 
+    func testEmptyObjectName() {
+        XCTAssertEqual(TypeEncoding("@"), .id)
+        XCTAssertEqual(TypeEncoding(#"@"""#), .object(name: ""))
+        XCTAssertEqual(TypeEncoding(#"@"""#)?.encoded, #"@"""#)
+
+        // From std::vector ivars, where "" is the empty name of the next field
+        let encoding = #"{vector<id>="__begin_"^@"__end_"^@""{?="__cap_"^@}}"#
+        XCTAssertEqual(TypeEncoding(encoding)?.encoded, encoding)
+    }
+
+
     var alreadyChecked = Set<String>()
 
     func check(_ property: ObjCProperty) {
