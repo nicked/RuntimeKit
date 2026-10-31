@@ -93,6 +93,8 @@ let ivar = cls.ivars["_unit"]!
 print(ivar.offset)      // 8
 ```
 
+Unlike iteration, a subscript lookup also finds members that are inherited from superclasses.
+
 Every class and protocol known to the runtime can also be iterated:
 
 ```swift
