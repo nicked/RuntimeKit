@@ -66,6 +66,13 @@ final class ObjCClassTests: XCTestCase {
         XCTAssertGreaterThan(Array(nsObjCls.subclasses(directOnly: false)).count, Array(nsObjCls.subclasses(directOnly: true)).count)
     }
 
+    func testImageClassLookup() throws {
+        let imageName = try XCTUnwrap(cls.imageName)
+        let imageClasses = ObjCClass.allClasses(in: imageName)
+        XCTAssertEqual(imageClasses[cls.name], cls)
+        XCTAssertNil(imageClasses[nsObjCls.name], "NSObject is in a different image")
+    }
+
     func testProtocols() {
         XCTAssertEqualSeq(cls.protocols, [ObjCProtocol(NSCopying.self)])
         XCTAssertEqualSeq(subCls.protocols, [ObjCProtocol(NSCoding.self)])
