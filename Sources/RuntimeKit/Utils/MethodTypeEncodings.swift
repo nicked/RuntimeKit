@@ -9,11 +9,14 @@ import Foundation
 
 /// Represents the type encoding of a method, including return value, receiver object, selector and parameter types.
 ///
+/// This is a collection of the types in order: return type, object type (@), selector type (:) and any parameter types.
+///
 /// Will always round-trip a method encoding from the runtime back the same encoding, even if it isn't correctly formed.
 public struct MethodTypeEncodings {
 
     /// The types in the method encoding, in order: return type, object type (@), selector type (:) and any parameter types.
-    public let types: [TypeEncoding]
+    /// Not public, because the struct is itself a collection of these types.
+    let types: [TypeEncoding]
 
     /// Some runtime encodings include offset/size information.
     /// These are not strictly needed, but kept so that types can be re-encoded to identical strings.
@@ -46,6 +49,25 @@ public struct MethodTypeEncodings {
     /// Returns the method type encoded as a String.
     public var encoded: String {
         description
+    }
+
+    /// The return type of the method, or `.empty` if there are no types.
+    public var returnType: TypeEncoding {
+        types.first ?? .empty
+    }
+
+    /// The types of the explicit parameters, without the return type and the hidden `self` and `_cmd` parameters.
+    public var parameters: SubSequence {
+        dropFirst(3)
+    }
+}
+
+extension MethodTypeEncodings: RandomAccessCollection {
+    public var startIndex: Int { types.startIndex }
+    public var endIndex: Int { types.endIndex }
+
+    public subscript(position: Int) -> TypeEncoding {
+        types[position]
     }
 }
 

@@ -23,7 +23,7 @@ public struct ObjCMethod {
     }
 
     /// Returns an encoding describing this method's parameter and return types.
-    @inlinable public var encoding: MethodTypeEncodings {
+    @inlinable public var types: MethodTypeEncodings {
         MethodTypeEncodings(method_getTypeEncoding(method)!.asString) ?? .init()
     }
 
@@ -47,7 +47,7 @@ public struct ObjCMethod {
     }
 
     public var signature: MethodSignature {
-        MethodSignature(with: encoding)!
+        MethodSignature(with: types)!
     }
 
 
@@ -56,9 +56,9 @@ public struct ObjCMethod {
     /// Exchanges the implementation of this method with that of another.
     ///
     /// Both methods must be declared `@objc dynamic` in Swift.
-    /// - Warning: Will cause an assertion if the method encodings are different.
+    /// - Warning: Will cause an assertion if the method types are different.
     public func swizzle(with other: ObjCMethod) {
-        assert(encoding == other.encoding, "Exchanging implementations of methods with different types")
+        assert(types == other.types, "Exchanging implementations of methods with different types")
         method_exchangeImplementations(method, other.method)
     }
 
@@ -85,7 +85,7 @@ public struct ObjCMethod {
 
 extension ObjCMethod: CustomStringConvertible {
     public var description: String {
-        "\(selector) = \(encoding)"
+        "\(selector) = \(types)"
     }
 }
 

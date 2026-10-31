@@ -96,7 +96,7 @@ final class InvocationTests: XCTestCase {
         let sel = #selector(NSString.range(of:))
         let method = cls.methods[sel]!
 
-        let signature = MethodSignature(with: method.encoding)!
+        let signature = MethodSignature(with: method.types)!
         let invocation = Invocation(methodSignature: signature)
 
         let str: NSString = "Hello world"

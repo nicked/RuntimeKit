@@ -20,12 +20,12 @@ final class ProtocolTests: XCTestCase {
     func testProperties() {
         let rp = ObjCProperty.Details(
             "requiredProp",
-            attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
+            attributes: .init(nonAtomic: true, readOnly: true, type: .double)
         )
 
         let op = ObjCProperty.Details(
             "optionalProp",
-            attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
+            attributes: .init(nonAtomic: true, readOnly: true, type: .double)
         )
 
         XCTAssertEqual(proto.properties["requiredProp"]?.details, rp)
@@ -40,12 +40,12 @@ final class ProtocolTests: XCTestCase {
     func testClassProperties() {
         let rp = ObjCProperty.Details(
             "requiredClassProp",
-            attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
+            attributes: .init(nonAtomic: true, readOnly: true, type: .double)
         )
 
         let op = ObjCProperty.Details(
             "optionalClassProp",
-            attributes: .init(nonAtomic: true, readOnly: true, encoding: .double)
+            attributes: .init(nonAtomic: true, readOnly: true, type: .double)
         )
 
         XCTAssertEqual(proto.classProperties["requiredClassProp"]?.details, rp)
@@ -77,14 +77,14 @@ final class ProtocolTests: XCTestCase {
         XCTAssertNil(proto.optionalMethods[requiredMethod])
         let rm = try XCTUnwrap(proto.requiredMethods[requiredMethod])
         XCTAssertEqual(rm.selector, requiredMethod)
-        XCTAssertEqual(rm.encoding, .method())
+        XCTAssertEqual(rm.types, .method())
         XCTAssert(rm.isRequired)
         XCTAssert(rm.isInstanceMethod)
 
         XCTAssertNil(proto.requiredMethods[optionalMethod])
         let om = try XCTUnwrap(proto.optionalMethods[optionalMethod])
         XCTAssertEqual(om.selector, optionalMethod)
-        XCTAssertEqual(om.encoding, .method())
+        XCTAssertEqual(om.types, .method())
         XCTAssertFalse(om.isRequired)
         XCTAssert(om.isInstanceMethod)
 
@@ -98,13 +98,13 @@ final class ProtocolTests: XCTestCase {
     func testClassMethods() throws {
         let rm = try XCTUnwrap(proto.requiredClassMethods[requiredClassMethod])
         XCTAssertEqual(rm.selector, requiredClassMethod)
-        XCTAssertEqual(rm.encoding, .method())
+        XCTAssertEqual(rm.types, .method())
         XCTAssertTrue(rm.isRequired)
         XCTAssertFalse(rm.isInstanceMethod)
 
         let om = try XCTUnwrap(proto.optionalClassMethods[optionalClassMethod])
         XCTAssertEqual(om.selector, optionalClassMethod)
-        XCTAssertEqual(om.encoding, .method())
+        XCTAssertEqual(om.types, .method())
         XCTAssertFalse(om.isRequired)
         XCTAssertFalse(om.isInstanceMethod)
 
@@ -131,15 +131,15 @@ final class ProtocolTests: XCTestCase {
 
         let prop1 = ObjCProperty.Details(
             "prop1",
-            attributes: .init(readOnly: true, encoding: .double)
+            attributes: .init(readOnly: true, type: .double)
         )
         let prop2 = ObjCProperty.Details(
             "prop2",
-            attributes: .init(nonAtomic: true, dynamic: true, encoding: .double)
+            attributes: .init(nonAtomic: true, dynamic: true, type: .double)
         )
 
-        let method1 = ObjCProtocol.MethodDetails(selector: Selector(("method1")), encoding: .method(), isRequired: true, isInstanceMethod: true)
-        let method2 = ObjCProtocol.MethodDetails(selector: Selector(("method2")), encoding: .method(), isRequired: false, isInstanceMethod: false)
+        let method1 = ObjCProtocol.MethodDetails(selector: Selector(("method1")), types: .method(), isRequired: true, isInstanceMethod: true)
+        let method2 = ObjCProtocol.MethodDetails(selector: Selector(("method2")), types: .method(), isRequired: false, isInstanceMethod: false)
 
         let proto = try XCTUnwrap(
             ObjCProtocol.create(name, properties: [prop1], classProperties: [prop2], methods: [method1, method2], protocols: [ObjCProtocol(NSCopying.self)])

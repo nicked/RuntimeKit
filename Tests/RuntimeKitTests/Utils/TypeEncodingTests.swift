@@ -54,6 +54,20 @@ final class TypeEncodingTests: XCTestCase {
     }
 
 
+    func testMethodTypesCollection() {
+        let types = MethodTypeEncodings.method(returning: .int, params: .double, .id)
+        XCTAssertEqual(Array(types), [.int, .id, .selector, .double, .id])
+        XCTAssertEqual(types.count, 5)
+        XCTAssertEqual(types[2], .selector)
+        XCTAssertEqual(types.returnType, .int)
+        XCTAssertEqual(Array(types.parameters), [.double, .id])
+
+        let empty = MethodTypeEncodings()
+        XCTAssertEqual(empty.returnType, .empty)
+        XCTAssert(empty.parameters.isEmpty)
+    }
+
+
     var alreadyChecked = Set<String>()
 
     func check(_ property: ObjCProperty) {
@@ -79,13 +93,13 @@ final class TypeEncodingTests: XCTestCase {
     }
 
     func check(_ method: ObjCMethod) {
-        check(method.encoding, method.selector, rawEncoding: method_getTypeEncoding(method.method)?.asString)
+        check(method.types, method.selector, rawEncoding: method_getTypeEncoding(method.method)?.asString)
     }
 
     func check(_ method: ObjCProtocol.MethodDetails, on proto: ObjCProtocol) {
         let methodDesc = protocol_getMethodDescription(proto.proto, method.selector, method.isRequired, method.isInstanceMethod)
         let rawEncoding = methodDesc.types.map { String(cString: $0) }
-        check(method.encoding, method.selector, rawEncoding: rawEncoding)
+        check(method.types, method.selector, rawEncoding: rawEncoding)
     }
     
     func check(_ methodSig: MethodTypeEncodings?, _ selector: Selector, rawEncoding: String?) {
@@ -115,7 +129,7 @@ final class TypeEncodingTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(ivar.encoding.encoded, rawEncoding, "Couldn't parse encoding for ivar \(ivar.name)")
+        XCTAssertEqual(ivar.type.encoded, rawEncoding, "Couldn't parse encoding for ivar \(ivar.name)")
     }
 
 }

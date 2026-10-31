@@ -79,7 +79,7 @@ extension ObjCProperty {
         /// The setter behaviour of the property (`assign`, `strong`, `copy` or `weak`).
         public var setterType: SetterType = .assign
         /// The type encoding of the property.
-        public var encoding: TypeEncoding
+        public var type: TypeEncoding
         /// The name of the custom property getter.
         public var customGetter: String?
         /// The name of the custom property setter.
@@ -95,7 +95,7 @@ extension ObjCProperty {
         /// Parses attributes from a property description string, e.g. "T@,R,V_name"
         init(_ attribsStr: String) {
             var attribsStr = attribsStr
-            self.encoding = TypeEncoding(propertyAttributes: &attribsStr) ?? .empty
+            self.type = TypeEncoding(propertyAttributes: &attribsStr) ?? .empty
 
             let attribs = attribsStr
                 .split(separator: ",")
@@ -110,7 +110,7 @@ extension ObjCProperty {
                     case .copy: setterType = .copy
                     case .retain: setterType = .strong
                     case .weak: setterType = .weak
-                    case .type(let enc): encoding = enc
+                    case .type(let enc): type = enc
                     case .getter(let name): customGetter = name
                     case .setter(let name): customSetter = name
                     case .ivar(let name): ivarName = name
@@ -121,20 +121,20 @@ extension ObjCProperty {
         /// Creates a set of property attributes.
         public init(
             nonAtomic: Bool = false, readOnly: Bool = false, dynamic: Bool = false, setterType: SetterType = .assign,
-            encoding: TypeEncoding, customGetter: String? = nil, customSetter: String? = nil, ivarName: String? = nil
+            type: TypeEncoding, customGetter: String? = nil, customSetter: String? = nil, ivarName: String? = nil
         ) {
             self.nonAtomic = nonAtomic
             self.readOnly = readOnly
             self.dynamic = dynamic
             self.setterType = setterType
-            self.encoding = encoding
+            self.type = type
             self.customGetter = customGetter
             self.customSetter = customSetter
             self.ivarName = ivarName
         }
 
         func attributeList() -> [Attribute] {
-            var attribs: [Attribute] = [.type(encoding)]
+            var attribs: [Attribute] = [.type(type)]
             if readOnly     { attribs.append(.readOnly) }
             if nonAtomic    { attribs.append(.nonAtomic) }
             if dynamic      { attribs.append(.dynamic) }
