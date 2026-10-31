@@ -169,12 +169,32 @@ final class ObjCClassTests: XCTestCase {
             let impl: @convention(block) () -> Void = {
                 exp.fulfill()
             }
-            let ok = cls.methods.add(with: sel, types: .method(), block: impl)
+            let ok = cls.methods.add(sel, types: .method(), block: impl)
             XCTAssert(ok)
             XCTAssert(inst.responds(to: sel))
             _ = inst.perform(sel)
 
             wait(for: [exp])
+
+            XCTAssertFalse(cls.methods.add(sel, types: .method(), block: impl), "Can't add method twice")
+        }
+    }
+
+    func testSetMethod() throws {
+        try withTemporaryClass { cls in
+            let inst = try XCTUnwrap(cls.createInstance())
+            let sel = Selector(("foo"))
+
+            // Adds the method if the class does not have it
+            let noIMP = cls.methods.set(sel, types: .getter(for: .longLong), block: { _ in 1 } as @convention(block) (AnyObject) -> Int)
+            XCTAssertNil(noIMP)
+            XCTAssertEqual(inst.value(forKey: "foo") as? Int, 1)
+            let firstIMP = cls.methods.implementation(for: sel)
+
+            // Returns the implementation that it replaced
+            let previousIMP = cls.methods.set(sel, types: .getter(for: .longLong), block: { _ in 2 } as @convention(block) (AnyObject) -> Int)
+            XCTAssertEqual(previousIMP, firstIMP)
+            XCTAssertEqual(inst.value(forKey: "foo") as? Int, 2)
         }
     }
 
@@ -191,7 +211,11 @@ final class ObjCClassTests: XCTestCase {
             XCTAssertNotNil(prop)
             XCTAssertEqual(attribs, prop.attributes)
 
-            XCTAssertFalse(cls.properties.add(propName, attributes: attribs, canReplace: false), "Can't add property twice")
+            XCTAssertFalse(cls.properties.add(propName, attributes: attribs), "Can't add property twice")
+
+            let newAttribs = ObjCProperty.Attributes(nonAtomic: true, encoding: .longLong)
+            cls.properties.set(propName, attributes: newAttribs)
+            XCTAssertEqual(cls.properties[propName]?.attributes, newAttribs)
         }
     }
 

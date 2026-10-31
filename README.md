@@ -145,7 +145,7 @@ let body: @convention(block) (AnyClass) -> Int = { _ in
 }
 
 // Dynamically add it to the class
-cls.methods.add(with: "foo", types: .getter(for: .longLong), block: body)
+cls.methods.add("foo", types: .getter(for: .longLong), block: body)
 
 // Add a corresponding property (not strictly necessary)
 cls.properties.add("foo", attributes: .init(
