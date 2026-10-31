@@ -23,31 +23,46 @@ public extension ObjCClass {
 
 
 public extension RuntimeList where F == ObjCClass.Methods {
-    /// Adds or replaces a method on this class.
+    /// Adds a method to this class, only if it doesn't already exist.
     ///
-    /// To add a class method, call `self.classMethods.add(with:types:imp:canReplace:)`.
-    /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    /// - Parameter types: The full method encoding including the return type, receiver, selector and argument types.
-    /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    func add(with selector: Selector, types: MethodTypeEncodings, imp: IMP, canReplace: Bool = false) -> Bool {
-        if canReplace {
-            class_replaceMethod(funcs.cls.cls, selector, imp, types.encoded)
-            return true
-        } else {
-            return class_addMethod(funcs.cls.cls, selector, imp, types.encoded)
-        }
+    /// To add a class method, call `self.classMethods.add(_:types:imp:)`.
+    /// - Parameter types: All the types of the method: the return type, receiver, selector and argument types.
+    /// - Returns: Returns `false` if this class already has a method with the same selector.
+    func add(_ selector: Selector, types: MethodTypeEncodings, imp: IMP) -> Bool {
+        class_addMethod(funcs.cls.cls, selector, imp, types.encoded)
+    }
+
+    /// Adds a method to this class, only if it doesn't already exist.
+    ///
+    /// To add a class method, call `self.classMethods.add(_:types:block:)`.
+    /// - Parameter types: All the types of the method: the return type, receiver, selector and argument types.
+    /// - Parameter block: A closure that accepts an instance of this class (the receiver) as the first argument.
+    ///     It must be declared with `@convention(block)`.
+    /// - Returns: Returns `false` if this class already has a method with the same selector.
+    func add(_ selector: Selector, types: MethodTypeEncodings, block: Any) -> Bool {
+        add(selector, types: types, imp: imp_implementationWithBlock(block))
     }
 
     /// Adds or replaces a method on this class.
     ///
-    /// To add a class method, call `self.classMethods.add(with:types:block:canReplace:)`.
-    /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    /// - Parameter types: The full method encoding including the return type, receiver, selector and argument types.
+    /// To set a class method, call `self.classMethods.set(_:types:imp:)`.
+    /// - Parameter types: All the types of the method: the return type, receiver, selector and argument types.
+    /// - Returns: The previous implementation, or `nil` if this class did not already have the method.
+    @discardableResult
+    func set(_ selector: Selector, types: MethodTypeEncodings, imp: IMP) -> IMP? {
+        class_replaceMethod(funcs.cls.cls, selector, imp, types.encoded)
+    }
+
+    /// Adds or replaces a method on this class.
+    ///
+    /// To set a class method, call `self.classMethods.set(_:types:block:)`.
+    /// - Parameter types: All the types of the method: the return type, receiver, selector and argument types.
     /// - Parameter block: A closure that accepts an instance of this class (the receiver) as the first argument.
     ///     It must be declared with `@convention(block)`.
-    /// - Returns: Returns `false` if a method with the same name already exists and `canReplace` was not set.
-    func add(with selector: Selector, types: MethodTypeEncodings, block: Any, canReplace: Bool = false) -> Bool {
-        add(with: selector, types: types, imp: imp_implementationWithBlock(block), canReplace: canReplace)
+    /// - Returns: The previous implementation, or `nil` if this class did not already have the method.
+    @discardableResult
+    func set(_ selector: Selector, types: MethodTypeEncodings, block: Any) -> IMP? {
+        set(selector, types: types, imp: imp_implementationWithBlock(block))
     }
 
     /// The function pointer that would be called if the given message was sent to an instance of this class.

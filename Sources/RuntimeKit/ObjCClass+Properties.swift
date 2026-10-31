@@ -24,17 +24,20 @@ public extension ObjCClass {
 
 
 public extension RuntimeList where F == ObjCClass.Properties {
-    /// Adds or replaces a property on this class.
-    /// - Returns: Returns `false` if a property with the same name already exists and `canReplace` was not set.
-    /// - Note: To add a class property, call `self.classProperties.add(_:canReplace:)`.
-    func add(_ name: String, attributes: ObjCProperty.Attributes, canReplace: Bool = false) -> Bool {
+    /// Adds a property to this class, only if it doesn't already exist.
+    /// - Returns: Returns `false` if this class already has a property with the same name.
+    /// - Note: To add a class property, call `self.classProperties.add(_:attributes:)`.
+    func add(_ name: String, attributes: ObjCProperty.Attributes) -> Bool {
         attributes.withObjCTypes { attribs in
-            if canReplace {
-                class_replaceProperty(funcs.cls.cls, name, attribs, UInt32(attribs.count))
-                return true
-            } else {
-                return class_addProperty(funcs.cls.cls, name, attribs, UInt32(attribs.count))
-            }
+            class_addProperty(funcs.cls.cls, name, attribs, UInt32(attribs.count))
+        }
+    }
+
+    /// Adds or replaces a property on this class.
+    /// - Note: To set a class property, call `self.classProperties.set(_:attributes:)`.
+    func set(_ name: String, attributes: ObjCProperty.Attributes) {
+        attributes.withObjCTypes { attribs in
+            class_replaceProperty(funcs.cls.cls, name, attribs, UInt32(attribs.count))
         }
     }
 }
