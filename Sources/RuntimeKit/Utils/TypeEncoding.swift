@@ -50,7 +50,7 @@ public indirect enum TypeEncoding: Equatable {
     case array(count: Int, TypeEncoding?)
     case `struct`(String, [Field]?)
     case union(String, [Field]?)
-    case bitfield(Int)
+    case bitfield(Int?)
     case pointer(to: TypeEncoding?)
 
     // Modifiers
@@ -218,7 +218,7 @@ extension TypeEncoding: CustomStringConvertible {
             case .object(nil, []):  "@"
             case let .object(name, protos): "@\"\(name ?? "")\("<", protos, separator: "><", ">")\""
             case let .array(count, type):   "[\(count)\(type)]"
-            case let .bitfield(count):      "b\(count)"
+            case let .bitfield(count):      "b\(count.map(String.init) ?? "")"
             case let .block(params):        "@?\("<", params, ">")"
             case let .union(name, fields):  "(\(name)\("=", fields, outputEmpty: true))"
             case let .struct(name, fields): "{\(name)\("=", fields, outputEmpty: true)}"

@@ -65,6 +65,17 @@ final class TypeEncodingTests: XCTestCase {
     }
 
 
+    func testBitfieldWithoutNumber() {
+        XCTAssertEqual(TypeEncoding("b3"), .bitfield(3))
+        XCTAssertEqual(TypeEncoding("b"), .bitfield(nil))
+        XCTAssertEqual(TypeEncoding("b")?.encoded, "b")
+
+        let types = MethodTypeEncodings("b@:@")
+        XCTAssertEqual(Array(types ?? .init()), [.bitfield(nil), .id, .selector, .id])
+        XCTAssertEqual(types?.encoded, "b@:@")
+    }
+
+
     func testMethodTypesCollection() {
         let types = MethodTypeEncodings.method(returning: .int, params: .double, .id)
         XCTAssertEqual(Array(types), [.int, .id, .selector, .double, .id])
