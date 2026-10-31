@@ -13,7 +13,13 @@ public extension RuntimeList where F: RuntimeClassFuncs {
     ///
     /// If `topmostClass` is `nil`, all items are returned, even those of the root class.
     func upTo(_ topmostClass: ObjCClass?) -> some Sequence<F.WrapperType> {
-        funcs.cls.superclasses(excluding: topmostClass, includeSelf: true)
+        // Lists of class members (e.g. `classMethods`) are on the metaclass,
+        // so the traversal must stop at the metaclass of `topmostClass`.
+        var topmostClass = topmostClass
+        if funcs.cls.isMetaClass, let top = topmostClass, !top.isMetaClass {
+            topmostClass = top.metaClass
+        }
+        return funcs.cls.superclasses(excluding: topmostClass, includeSelf: true)
             .reversed()
             .map { $0[keyPath: F.keyPath] }
             .joined()

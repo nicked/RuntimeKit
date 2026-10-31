@@ -136,8 +136,9 @@ public extension ObjCClass {
 extension ObjCClass: Equatable {
     public static func == (lhs: ObjCClass, rhs: ObjCClass) -> Bool {
         // Can't compare on cls itself, because the values returned from objc_copyClassList
-        // and from objc_lookUpClass for the same class are different
-        lhs.name == rhs.name
+        // and from objc_lookUpClass for the same class are different.
+        // A metaclass has the same name as its class, so isMetaClass must also match.
+        lhs.isMetaClass == rhs.isMetaClass && lhs.name == rhs.name
     }
 }
 
