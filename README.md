@@ -161,7 +161,8 @@ print(obj.value(forKey: "foo")) // 123
 
 ### Swizzle methods
 
-Exchange the implementations of two methods:
+Exchange the implementations of two methods.
+If a method is inherited, `swizzle` first adds it to the class, so the superclass does not change:
 
 ```swift
 cls.methods.swizzle("foo", with: "bar")
