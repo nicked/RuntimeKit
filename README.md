@@ -79,7 +79,7 @@ Properties, methods, ivars and protocols can be iterated using standard `for-in`
 
 ```swift
 for prop in cls.properties {
-    print(prop.name, prop.attributes.encoding)
+    print(prop.name, prop.attributes.type)
 }
 
 // unit  @"NSUnit"
@@ -151,7 +151,7 @@ cls.methods.add("foo", types: .getter(for: .longLong), block: body)
 cls.properties.add("foo", attributes: .init(
     nonAtomic: true,
     readOnly: true,
-    encoding: .longLong
+    type: .longLong
 ))
 
 // Now this will succeed
@@ -187,8 +187,8 @@ let newCls = ObjCClass.create(
     "MyClass",
     superclass: cls,
     ivars: [
-        .init("_foo", encoding: .int),
-        .init("_bar", encoding: .char),
+        .init("_foo", type: .int),
+        .init("_bar", type: .char),
     ]
 )
 

@@ -24,7 +24,7 @@ public struct ObjCIvar {
 
     /// The type encoding of this instance variable.
     /// Backing ivars of Swift properties will return an empty encoding.
-    @inlinable public var encoding: TypeEncoding {
+    @inlinable public var type: TypeEncoding {
         ivar_getTypeEncoding(ivar)?.asTypeEncoding ?? .empty
     }
 
@@ -39,14 +39,14 @@ extension ObjCIvar {
     /// Represents an instance variable for creating a new class.
     public struct Details {
         let name: String
-        let encoding: TypeEncoding
+        let type: TypeEncoding
         let size: Int
         let alignment: Int
 
-        public init(_ name: String, encoding: TypeEncoding) {
+        public init(_ name: String, type: TypeEncoding) {
             self.name = name
-            self.encoding = encoding
-            (self.size, self.alignment) = encoding.sizeAndAlignment
+            self.type = type
+            (self.size, self.alignment) = type.sizeAndAlignment
         }
 
         /// For `class_addIvar` we need the as the number of bits to shift
@@ -58,7 +58,7 @@ extension ObjCIvar {
 
 extension ObjCIvar: CustomStringConvertible {
     public var description: String {
-        "\(name) = \(encoding)"
+        "\(name) = \(type)"
     }
 }
 

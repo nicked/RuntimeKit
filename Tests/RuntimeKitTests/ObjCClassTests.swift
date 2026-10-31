@@ -12,12 +12,12 @@ import XCTest
 final class ObjCClassTests: XCTestCase {
 
     let cls = ObjCClass(ExampleClass.self)
-    let prop = ObjCProperty.Details("exampleProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleProp"))
-    let clsProp = ObjCProperty.Details("exampleClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
+    let prop = ObjCProperty.Details("exampleProp", attributes: .init(nonAtomic: true, type: .longLong, ivarName: "exampleProp"))
+    let clsProp = ObjCProperty.Details("exampleClassProp", attributes: .init(nonAtomic: true, type: .longLong))
 
     let subCls = ObjCClass(ExampleSubClass.self)
-    let subProp = ObjCProperty.Details("exampleSubProp", attributes: .init(nonAtomic: true, encoding: .longLong, ivarName: "exampleSubProp"))
-    let subClsProp = ObjCProperty.Details("exampleSubClassProp", attributes: .init(nonAtomic: true, encoding: .longLong))
+    let subProp = ObjCProperty.Details("exampleSubProp", attributes: .init(nonAtomic: true, type: .longLong, ivarName: "exampleSubProp"))
+    let subClsProp = ObjCProperty.Details("exampleSubClassProp", attributes: .init(nonAtomic: true, type: .longLong))
 
     let nsObjCls = ObjCClass(NSObject.self)
 
@@ -132,8 +132,8 @@ final class ObjCClassTests: XCTestCase {
             clsName,
             superclass: nsObjCls,
             ivars: [
-                .init("_bool", encoding: .char),
-                .init("_obj", encoding: .id),
+                .init("_bool", type: .char),
+                .init("_obj", type: .id),
             ]
         ))
         XCTAssertEqual(ObjCClass(named: clsName), newCls)
@@ -141,17 +141,17 @@ final class ObjCClassTests: XCTestCase {
         let ivars = Array(newCls.ivars)
         XCTAssertEqual(ivars.count, 2)
         XCTAssertEqual(ivars.first?.name, "_bool")
-        XCTAssertEqual(ivars.first?.encoding, .char)
+        XCTAssertEqual(ivars.first?.type, .char)
         XCTAssertEqual(ivars.first?.offset, 8)
         XCTAssertEqual(ivars.last?.name, "_obj")
-        XCTAssertEqual(ivars.last?.encoding, .id)
+        XCTAssertEqual(ivars.last?.type, .id)
         XCTAssertEqual(ivars.last?.offset, 16)
 
         XCTAssertEqual(newCls.instanceSize, 24)
 
         let propName = "newProp"
         XCTAssertNil(newCls.properties[propName])
-        let attribs = ObjCProperty.Attributes(encoding: .int)
+        let attribs = ObjCProperty.Attributes(type: .int)
         XCTAssert(newCls.properties.add(propName, attributes: attribs))
         XCTAssertEqual(newCls.properties[propName]?.attributes, attribs)
 
@@ -204,7 +204,7 @@ final class ObjCClassTests: XCTestCase {
 
             XCTAssertNil(cls.properties[propName])
 
-            let attribs = ObjCProperty.Attributes(nonAtomic: true, readOnly: true, dynamic: true, setterType: .copy, encoding: .int)
+            let attribs = ObjCProperty.Attributes(nonAtomic: true, readOnly: true, dynamic: true, setterType: .copy, type: .int)
             XCTAssert(cls.properties.add(propName, attributes: attribs))
 
             let prop = try XCTUnwrap(cls.properties[propName])
@@ -213,7 +213,7 @@ final class ObjCClassTests: XCTestCase {
 
             XCTAssertFalse(cls.properties.add(propName, attributes: attribs), "Can't add property twice")
 
-            let newAttribs = ObjCProperty.Attributes(nonAtomic: true, encoding: .longLong)
+            let newAttribs = ObjCProperty.Attributes(nonAtomic: true, type: .longLong)
             cls.properties.set(propName, attributes: newAttribs)
             XCTAssertEqual(cls.properties[propName]?.attributes, newAttribs)
         }

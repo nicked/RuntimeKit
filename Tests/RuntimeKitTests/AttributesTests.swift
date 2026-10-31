@@ -61,7 +61,7 @@ final class AttributesTests: XCTestCase {
             readOnly: true,
             dynamic: true,
             setterType: .copy,
-            encoding: TypeEncoding(#"{YorkshireTeaStruct="pot"i"lady"c}"#)!,
+            type: TypeEncoding(#"{YorkshireTeaStruct="pot"i"lady"c}"#)!,
             customGetter: "yorkshireTea",
             customSetter: "setYorkshireTea",
             ivarName: "_yorkshireTea"
@@ -80,7 +80,7 @@ final class AttributesTests: XCTestCase {
     }
 
     func testAttribsSplitMinimal() {
-        let attrs = ObjCProperty.Attributes(encoding: .int)
+        let attrs = ObjCProperty.Attributes(type: .int)
 
         XCTAssertEqual(attrs.asDict(), ["T": "i"])
     }
