@@ -159,7 +159,7 @@ public extension ObjCClass {
             guard let cls = objc_lookUpClass(name), let clsImgName = class_getImageName(cls) else {
                 return nil
             }
-            return String(cString: clsImgName) == imageName ? clsImgName : nil
+            return String(cString: clsImgName) == imageName ? class_getName(cls) : nil
         }
 
         @inlinable public func wrap(_ name: UnsafePointer<CChar>) -> ObjCClass {
