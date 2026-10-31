@@ -66,7 +66,7 @@ extension Substring {
             case "[": return try parseArray()
             case "{": return try parseCompoundType(isStruct: true)
             case "(": return try parseCompoundType(isStruct: false)
-            case "b": return try .bitfield(parseInt())
+            case "b": return .bitfield(try? parseInt())
             case "^": return try .pointer(to: parseOptionalTypeEncoding())
 
             case "r": return try .const(parseTypeEncoding())
