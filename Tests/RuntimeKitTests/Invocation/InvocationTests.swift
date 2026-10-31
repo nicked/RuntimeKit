@@ -16,6 +16,14 @@ final class InvocationTests: XCTestCase {
         XCTAssertEqual(invocation.methodSignature, signature)
     }
 
+    func testInvalidMethodSignature() {
+        // signatureWithObjCTypes: returns nil for an empty encoding
+        XCTAssertNil(MethodSignature(with: MethodTypeEncodings()))
+        // and raises an ObjC exception for an unsupported type, which RuntimeFix catches
+        XCTAssertNil(MethodSignature(with: .method(params: .bitfield(3))))
+        XCTAssertNil(MethodSignature(with: .method(params: .unknown)))
+    }
+
     func testTarget() {
         let signature = MethodSignature(with: .method())!
         let invocation = Invocation(methodSignature: signature)
