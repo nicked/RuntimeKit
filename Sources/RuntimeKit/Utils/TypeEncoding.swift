@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RuntimeFix
 
 /// The encoding of a single type which can be parsed from an Objective-C type encoding string.
 ///
@@ -148,9 +149,12 @@ extension TypeEncoding {
     }
 
     /// Obtains the size and the alignment of the encoded type.
+    /// Both are 0 if the runtime cannot get the size of the type (e.g. for `.empty` or a bitfield).
     var sizeAndAlignment: (size: Int, alignment: Int) {
         var sizeInfo = (0, 0)
-        NSGetSizeAndAlignment(encoded, &sizeInfo.0, &sizeInfo.1)
+        guard NSGetSizeAndAlignmentNoThrow(encoded, &sizeInfo.0, &sizeInfo.1) else {
+            return (0, 0)
+        }
         return sizeInfo
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RuntimeFix
 
 
 /// Swift wrapper for `NSMethodSignature`.
@@ -16,9 +17,10 @@ public struct MethodSignature {
         self.inner = inner
     }
 
-    /// Returns a MethodSignature for the given method type encodings.
+    /// Returns a MethodSignature for the given method type encodings,
+    /// or `nil` if NSMethodSignature cannot parse the encodings.
     public init?(with typeEncodings: MethodTypeEncodings) {
-        guard let obj = Self.castCls.signature(withObjCTypes: typeEncodings.encoded) else {
+        guard let obj = Self.castCls.signatureNoThrow(withObjCTypes: typeEncodings.encoded) else {
             return nil
         }
         self.inner = obj
@@ -87,7 +89,9 @@ extension MethodSignature: Equatable {
 
 /// Matches the API of the real NSMethodSignature
 @objc protocol NSMethodSignatureProtocol: NSObjectProtocol {
-    static func signature(withObjCTypes types: UnsafePointer<CChar>!) -> NSMethodSignatureProtocol?
+    /// Added by RuntimeFix, because `signatureWithObjCTypes:` raises an ObjC exception instead of returning nil
+    @objc(signatureWithObjCTypesNoThrow:) static func signatureNoThrow(withObjCTypes types: UnsafePointer<CChar>) -> NSMethodSignatureProtocol?
+
     var numberOfArguments: UInt { get }
     @objc(getArgumentTypeAtIndex:) func getArgumentType(at idx: UInt) -> UnsafePointer<CChar>!
     var frameLength: UInt { get }

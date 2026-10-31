@@ -54,6 +54,17 @@ final class TypeEncodingTests: XCTestCase {
     }
 
 
+    func testSizeAndAlignment() {
+        XCTAssert(TypeEncoding.char.sizeAndAlignment == (1, 1))
+        XCTAssert(TypeEncoding.struct("CGPoint", .double, .double).sizeAndAlignment == (16, 8))
+
+        // NSGetSizeAndAlignment raises an ObjC exception for a bitfield, which RuntimeFix catches
+        XCTAssert(TypeEncoding.empty.sizeAndAlignment == (0, 0))
+        XCTAssert(TypeEncoding.bitfield(3).sizeAndAlignment == (0, 0))
+        XCTAssert(TypeEncoding.unknown.sizeAndAlignment == (0, 0))
+    }
+
+
     func testMethodTypesCollection() {
         let types = MethodTypeEncodings.method(returning: .int, params: .double, .id)
         XCTAssertEqual(Array(types), [.int, .id, .selector, .double, .id])
