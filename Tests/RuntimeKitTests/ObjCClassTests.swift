@@ -168,6 +168,21 @@ final class ObjCClassTests: XCTestCase {
         newCls.dispose()
     }
 
+    func testCreateClassIvarAlignment() throws {
+        let newCls = try XCTUnwrap(ObjCClass.create(
+            "IvarAlignmentClass",
+            superclass: nsObjCls,
+            ivars: [
+                .init("_char", type: .char),
+                .init("_point", type: .struct("CGPoint", .double, .double)),
+                .init("_void", type: .void),    // has an alignment of 0
+            ]
+        ))
+        let ivars = Array(newCls.ivars)
+        XCTAssertEqual(ivars.map(\.offset), [8, 16, 32])
+        newCls.dispose()
+    }
+
     func testForEachRethrows() {
         struct StopError: Error {}
         var visited = 0

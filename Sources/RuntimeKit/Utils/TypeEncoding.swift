@@ -147,7 +147,7 @@ extension TypeEncoding {
         }
     }
 
-    /// Obtains the actual size and the aligned size of the encoded type.
+    /// Obtains the size and the alignment of the encoded type.
     var sizeAndAlignment: (size: Int, alignment: Int) {
         var sizeInfo = (0, 0)
         NSGetSizeAndAlignment(encoded, &sizeInfo.0, &sizeInfo.1)
