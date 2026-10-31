@@ -113,6 +113,17 @@ final class ObjCClassTests: XCTestCase {
         ])
     }
 
+    func testSubscriptsIncludeSuperclasses() {
+        XCTAssertFalse(subCls.methods.contains { $0.selector == #selector(ExampleClass.exampleFunc) })
+        XCTAssertNotNil(subCls.methods[#selector(ExampleClass.exampleFunc)])
+
+        XCTAssertFalse(subCls.properties.contains { $0.name == "exampleProp" })
+        XCTAssertNotNil(subCls.properties["exampleProp"])
+
+        XCTAssertFalse(subCls.ivars.contains { $0.name == "exampleProp" })
+        XCTAssertNotNil(subCls.ivars["exampleProp"])
+    }
+
     func testMetaclassEquality() {
         XCTAssertNotEqual(cls.metaClass, cls)
         XCTAssertNotEqual(nsObjCls.metaClass, nsObjCls)

@@ -49,6 +49,8 @@ public struct RuntimeList<F: RuntimeFuncs>: Sequence {
     }
 
     /// Returns the item for the given `name` if it exists.
+    ///
+    /// - Note: On classes, this also returns items defined on superclasses.
     @inlinable public subscript(name: F.KeyType) -> Element? {
         funcs.lookup(name: name).map(funcs.wrap)
     }
