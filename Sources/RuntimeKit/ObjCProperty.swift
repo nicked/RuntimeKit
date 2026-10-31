@@ -53,7 +53,14 @@ extension ObjCProperty {
         /// Returns the setter selector of the property, either a custom setter or a default setter derived from the property name.
         /// - Note: The returned selector will not actually exist if the property is read-only.
         public var setter: Selector {
-            Selector(attributes.customSetter ?? "set\(name.prefix(1).uppercased())\(name.dropFirst()):")
+            if let customSetter = attributes.customSetter {
+                return Selector(customSetter)
+            }
+            // Like clang, only uppercase an ASCII first letter. uppercased() would change "ß" to "SS".
+            guard let first = name.first, first.isASCII else {
+                return Selector("set\(name):")
+            }
+            return Selector("set\(first.uppercased())\(name.dropFirst()):")
         }
     }
 }

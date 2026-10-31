@@ -79,6 +79,19 @@ final class AttributesTests: XCTestCase {
         ])
     }
 
+    func testDefaultSetterNames() {
+        func setter(_ name: String, customSetter: String? = nil) -> Selector {
+            ObjCProperty.Details(name, attributes: .init(type: .int, customSetter: customSetter)).setter
+        }
+
+        XCTAssertEqual(setter("value"), Selector(("setValue:")))
+        XCTAssertEqual(setter("URL"), Selector(("setURL:")))
+        XCTAssertEqual(setter("_value"), Selector(("set_value:")))
+        // Only an ASCII first letter is uppercased
+        XCTAssertEqual(setter("ßeta"), Selector(("setßeta:")))
+        XCTAssertEqual(setter("value", customSetter: "assignValueTo:"), Selector(("assignValueTo:")))
+    }
+
     func testAttribsSplitMinimal() {
         let attrs = ObjCProperty.Attributes(type: .int)
 
