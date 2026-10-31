@@ -180,6 +180,11 @@ extension Substring {
         guard let names = parseStr() else {
             return .id
         }
+        // Keep an empty name so that `@""` re-encodes as `@""` and not as `@`.
+        // This occurs in struct fields such as `"__end_"^@""{?=...}`.
+        guard !names.isEmpty else {
+            return .object(name: "")
+        }
         var clsName: String?
         var protocols: [String] = []
         let parts = names.split(separator: "<")
