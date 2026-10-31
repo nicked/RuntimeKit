@@ -46,8 +46,9 @@ public struct Invocation {
     /// these values can be retrieved directly with the `target` and `selector` methods.
     /// Use indices 2 and greater for the arguments normally passed in a message.
     /// This method raises NSInvalidArgumentException if index is greater than the actual number of arguments for the selector.
+    /// - Precondition: `T` must have the same size as the argument type in the method signature.
     public func getArgument<T>(at index: Int, as type: T.Type) -> T {
-        valueFromPointer {
+        valueFromPointer(byteCount: argumentSize(at: index)) {
             inner.getArgument($0, at: index)
         }
     }
@@ -58,8 +59,9 @@ public struct Invocation {
     /// you should set these values directly with the `target` and `selector` properties.
     /// Use indices 2 and greater for the arguments normally passed in a message.
     /// This method raises NSInvalidArgumentException if index is greater than the actual number of arguments for the selector.
+    /// - Precondition: `T` must have the same size as the argument type in the method signature.
     public func setArgument<T>(at index: Int, to value: T) {
-        withPointerFromValue(value) {
+        withPointerFromValue(value, byteCount: argumentSize(at: index)) {
             inner.setArgument($0, at: index)
         }
     }
@@ -96,8 +98,9 @@ public struct Invocation {
     ///
     /// Note that for reference types you must use the Objective-C type here and not the Swift value type
     /// (e.g. `NSString` instead of `String`).
+    /// - Precondition: `T` must have the same size as the return type in the method signature.
     public func returnValue<T>(as type: T.Type) -> T {
-        valueFromPointer {
+        valueFromPointer(byteCount: Int(inner.methodSignature.methodReturnLength)) {
             inner.getReturnValue($0)
         }
     }
@@ -107,8 +110,9 @@ public struct Invocation {
     ///
     /// Note that for reference types you must pass an Objective-C type here and not the Swift value type
     /// (e.g. `NSString` instead of `String`).
+    /// - Precondition: `T` must have the same size as the return type in the method signature.
     public func setReturnValue<T>(_ value: T) {
-        withPointerFromValue(value) {
+        withPointerFromValue(value, byteCount: Int(inner.methodSignature.methodReturnLength)) {
             inner.setReturnValue($0)
         }
     }
@@ -125,32 +129,37 @@ public struct Invocation {
         return cls.cls as! NSInvocationProtocol.Type
     }()
 
+    /// The size in bytes of the argument at `index`, as declared in the method signature.
+    private func argumentSize(at index: Int) -> Int {
+        var size = 0
+        NSGetSizeAndAlignment(inner.methodSignature.getArgumentType(at: UInt(index)), &size, nil)
+        return size
+    }
+
+    /// Traps if `T` does not have the size that the method signature declares.
+    ///
+    /// NSInvocation copies exactly `byteCount` bytes, so a different size would read or write past the end of the value.
+    private func checkSize<T>(of type: T.Type, byteCount: Int) {
+        precondition(
+            MemoryLayout<T>.size == byteCount,
+            "\(T.self) is \(MemoryLayout<T>.size) bytes, but the method signature declares \(byteCount) bytes"
+        )
+    }
+
     /// Gets a reference or value type from a raw pointer
-    private func valueFromPointer<T>(using block: (UnsafeMutableRawPointer) -> Void) -> T {
-        if T.self is AnyClass {
-            let ptr = UnsafeMutablePointer<T>.allocate(capacity: 1)
-            defer { ptr.deallocate() }
-            block(ptr)
-            return ptr.pointee
-        } else {
-            let buffer = UnsafeMutableBufferPointer<T>.allocate(capacity: 1)
-            defer { buffer.deallocate() }
-            block(UnsafeMutableRawPointer(buffer.baseAddress!))
-            return buffer[0]
-        }
+    private func valueFromPointer<T>(byteCount: Int, using block: (UnsafeMutableRawPointer) -> Void) -> T {
+        checkSize(of: T.self, byteCount: byteCount)
+        let ptr = UnsafeMutableRawPointer.allocate(byteCount: byteCount, alignment: MemoryLayout<T>.alignment)
+        defer { ptr.deallocate() }
+        block(ptr)
+        return ptr.load(as: T.self)
     }
 
     /// Gets a raw pointer to a reference or value type
-    private func withPointerFromValue<T>(_ value: T, using block: (UnsafeMutableRawPointer) -> Void) {
-        if T.self is AnyClass {
-            withUnsafePointer(to: value) {
-                block(UnsafeMutableRawPointer(mutating: $0))
-            }
-        } else {
-            var value = value
-            withUnsafeBytes(of: &value) {
-                block(UnsafeMutableRawPointer(mutating: $0.baseAddress!))
-            }
+    private func withPointerFromValue<T>(_ value: T, byteCount: Int, using block: (UnsafeMutableRawPointer) -> Void) {
+        checkSize(of: T.self, byteCount: byteCount)
+        withUnsafePointer(to: value) {
+            block(UnsafeMutableRawPointer(mutating: $0))
         }
     }
 }
