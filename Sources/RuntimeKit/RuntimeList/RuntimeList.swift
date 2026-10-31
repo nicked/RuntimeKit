@@ -44,7 +44,8 @@ public struct RuntimeList<F: RuntimeFuncs>: Sequence {
     }
 
     @_documentation(visibility: internal)
-    @inlinable public func makeIterator() -> Iterator {
+    @inlinable @inline(__always)
+    public func makeIterator() -> Iterator {
         Iterator(list: self)
     }
 
@@ -78,7 +79,8 @@ extension RuntimeList {
         @usableFromInline let buffer: FreeingBuffer<F.RuntimeType>
         @usableFromInline var iterator: UnsafeBufferPointer<F.RuntimeType>.Iterator
 
-        @inlinable init(list: RuntimeList) {
+        @inlinable @inline(__always)
+        init(list: RuntimeList) {
             self.list = list
             self.buffer = FreeingBuffer(list.createBuffer())
             self.iterator = self.buffer.buffer.makeIterator()
