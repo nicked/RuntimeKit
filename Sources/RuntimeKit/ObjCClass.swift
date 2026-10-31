@@ -138,7 +138,7 @@ extension ObjCClass: Equatable {
         // Can't compare on cls itself, because the values returned from objc_copyClassList
         // and from objc_lookUpClass for the same class are different.
         // A metaclass has the same name as its class, so isMetaClass must also match.
-        lhs.isMetaClass == rhs.isMetaClass && lhs.name == rhs.name
+        lhs.cls === rhs.cls || (lhs.isMetaClass == rhs.isMetaClass && strcmp(class_getName(lhs.cls), class_getName(rhs.cls)) == 0)
     }
 }
 
