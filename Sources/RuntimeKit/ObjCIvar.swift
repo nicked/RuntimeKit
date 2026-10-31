@@ -49,9 +49,10 @@ extension ObjCIvar {
             (self.size, self.alignment) = type.sizeAndAlignment
         }
 
-        /// For `class_addIvar` we need the as the number of bits to shift
+        /// For `class_addIvar` we need the alignment as the number of bits to shift
         var alignmentShift: UInt8 {
-            UInt8(log2(Double(alignment)))
+            // The alignment is a power of 2, except for `void` which has an alignment of 0
+            UInt8(max(alignment, 1).trailingZeroBitCount)
         }
     }
 }
