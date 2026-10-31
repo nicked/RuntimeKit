@@ -163,7 +163,7 @@ public extension ObjCClass {
         }
 
         @inlinable public func wrap(_ name: UnsafePointer<CChar>) -> ObjCClass {
-            ObjCClass(named: String(cString: name))!
+            ObjCClass(objc_lookUpClass(name)!)
         }
     }
 
