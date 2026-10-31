@@ -131,6 +131,20 @@ final class ObjCClassTests: XCTestCase {
         )
     }
 
+    func testSwizzleInheritedMethod() {
+        let sub = ObjCClass(SwizzleSubClass.self)
+        XCTAssertFalse(sub.methods.contains { $0.selector == #selector(SwizzleBaseClass.original) })
+
+        XCTAssert(sub.methods.swizzle(#selector(SwizzleBaseClass.original), with: #selector(SwizzleBaseClass.replacement)))
+
+        XCTAssertEqual(SwizzleSubClass().original(), "replacement")
+        XCTAssertEqual(SwizzleSubClass().replacement(), "original")
+
+        // The superclass must not be affected
+        XCTAssertEqual(SwizzleBaseClass().original(), "original")
+        XCTAssertEqual(SwizzleBaseClass().replacement(), "replacement")
+    }
+
     func testSuperclasses() {
         XCTAssertEqualSeq(subCls.superclasses(), [cls, nsObjCls])
         XCTAssertEqualSeq(subCls.superclasses(includeSelf: true), [subCls, cls, nsObjCls])
@@ -311,5 +325,15 @@ class ExampleSubClass: ExampleClass, NSCoding {
     required init?(coder: NSCoder) { nil }
 
 }
+
+
+/// Only used by `testSwizzleInheritedMethod`, because swizzling changes the class for the rest of the process.
+@objcMembers
+class SwizzleBaseClass: NSObject {
+    dynamic func original() -> String { "original" }
+    dynamic func replacement() -> String { "replacement" }
+}
+
+class SwizzleSubClass: SwizzleBaseClass {}
 
 

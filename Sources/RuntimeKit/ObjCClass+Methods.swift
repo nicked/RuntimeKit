@@ -76,12 +76,20 @@ public extension RuntimeList where F == ObjCClass.Methods {
     /// Exchanges the implementations of two methods on this class.
     ///
     /// Both methods must be declared `@objc dynamic` in Swift for this to work.
+    /// If either method is inherited, it is first added to this class, so superclasses are not affected.
     /// - Returns: Returns `false` if either of the methods don't exist or if both selectors are the same.
     /// - Warning: Will cause an assertion if the method encodings are different.
     func swizzle(_ sel1: Selector, with sel2: Selector) -> Bool {
-        guard sel1 != sel2, let m1 = self[sel1], let m2 = self[sel2] else {
+        guard sel1 != sel2, var m1 = self[sel1], var m2 = self[sel2] else {
             return false
         }
+
+        // An inherited method belongs to the superclass, so exchanging it would also change the superclass
+        // and its other subclasses. class_addMethod does nothing if this class already has the method.
+        // If it adds a copy to this class, look up the copy, because that is the method to exchange.
+        let cls: AnyClass = funcs.cls.cls
+        m1 = class_addMethod(cls, sel1, m1.implementation, method_getTypeEncoding(m1.method)) ? self[sel1]! : m1
+        m2 = class_addMethod(cls, sel2, m2.implementation, method_getTypeEncoding(m2.method)) ? self[sel2]! : m2
 
         m1.swizzle(with: m2)
         return true
