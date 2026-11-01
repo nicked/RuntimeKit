@@ -75,6 +75,7 @@ public extension RuntimeList where F == ObjCClass.Methods {
     /// If instances of this class do not respond to the selector, the returned `IMP` will be part of the runtime's message forwarding machinery.
     /// May be faster than calling `methods[selector].implementation`.
     func implementation(for selector: Selector) -> IMP {
+        // Only nil for a nil class or selector. Otherwise returns _objc_msgForward if not found
         class_getMethodImplementation(funcs.cls.cls, selector)!
     }
 

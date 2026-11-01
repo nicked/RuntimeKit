@@ -55,6 +55,7 @@ public extension ObjCProtocol {
         }
 
         @inlinable public func wrap(_ desc: objc_method_description) -> ObjCProtocol.MethodDetails {
+            // The runtime sets the name of each item in the list
             ObjCProtocol.MethodDetails(selector: desc.name!, on: proto.proto, isRequired: isRequired, isInstanceMethod: isInstance)
         }
     }

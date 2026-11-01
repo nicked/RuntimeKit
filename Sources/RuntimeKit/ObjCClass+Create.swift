@@ -44,6 +44,9 @@ extension ObjCClass {
 
     /// Creates an instance of the class.
     ///
+    /// This allocates the instance and sets all its ivars to zero, but it does not call `init`.
+    /// An instance of a class that sets up state in `init` will not be in a valid state.
+    ///
     /// - Parameter extraBytes: An integer indicating the number of extra bytes to allocate.
     ///                         The additional bytes can be used to store additional instance variables beyond those defined in the class definition.
     public func createInstance(extraBytes: Int = 0) -> AnyObject? {

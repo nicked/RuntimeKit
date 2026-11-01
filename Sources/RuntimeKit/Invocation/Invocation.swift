@@ -64,6 +64,8 @@ public struct Invocation {
     /// Use indices 2 and greater for the arguments normally passed in a message.
     /// This method raises NSInvalidArgumentException if index is greater than the actual number of arguments for the selector.
     /// - Precondition: `T` must have the same size as the argument type in the method signature.
+    /// - Important: The invocation does not retain an object argument. Keep the object alive until `invoke` returns,
+    ///     or until you call `retainArguments()` after you set the arguments.
     public func setArgument<T>(at index: Int, to value: T) {
         withPointerFromValue(value, byteCount: argumentSize(at: index)) {
             inner.setArgument($0, at: index)
@@ -72,6 +74,8 @@ public struct Invocation {
 
     /// If the receiver hasn’t already done so, retains the target and all object arguments of the receiver
     /// and copies all of its C-string arguments and blocks. If a return value has been set, this is also retained or copied.
+    ///
+    /// - Warning: Do not call this if a method writes into a `char *` argument. The method writes into the copy, not into your buffer.
     public func retainArguments() {
         inner.retainArguments()
     }
@@ -115,6 +119,8 @@ public struct Invocation {
     /// Note that for reference types you must pass an Objective-C type here and not the Swift value type
     /// (e.g. `NSString` instead of `String`).
     /// - Precondition: `T` must have the same size as the return type in the method signature.
+    /// - Important: The invocation does not retain an object return value. Keep the object alive while you use the invocation,
+    ///     or until you call `retainArguments()` after you set the return value.
     public func setReturnValue<T>(_ value: T) {
         withPointerFromValue(value, byteCount: Int(inner.methodSignature.methodReturnLength)) {
             inner.setReturnValue($0)

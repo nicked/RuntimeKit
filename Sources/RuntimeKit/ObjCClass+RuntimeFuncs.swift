@@ -163,6 +163,7 @@ public extension ObjCClass {
         }
 
         @inlinable public func wrap(_ name: UnsafePointer<CChar>) -> ObjCClass {
+            // objc_copyClassNamesForImage skips the classes that the runtime ignores
             ObjCClass(objc_lookUpClass(name)!)
         }
     }

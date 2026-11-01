@@ -93,6 +93,7 @@ extension ObjCProperty {
 
         /// Parses attributes from a runtime property.
         public init(_ prop: objc_property_t) {
+            // The runtime stores "" for a property with no attributes
             self = Self(property_getAttributes(prop)!.asString)
         }
 

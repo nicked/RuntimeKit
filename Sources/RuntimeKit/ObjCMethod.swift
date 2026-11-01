@@ -24,6 +24,7 @@ public struct ObjCMethod {
 
     /// Returns an encoding describing this method's parameter and return types.
     @inlinable public var types: MethodTypeEncodings {
+        // Only nil for a nil Method. class_addMethod stores "" for nil types
         MethodTypeEncodings(method_getTypeEncoding(method)!.asString) ?? .init()
     }
 
@@ -72,6 +73,9 @@ public struct ObjCMethod {
     ///
     /// Only returns a block that was previously set using this property.
     /// When setting this property, the block must be declared with `@convention(block)`.
+    /// Setting `nil` does nothing.
+    ///
+    /// - Note: Setting a new block does not release the previous block, so the previous block leaks.
     public var implementationBlock: Any? {
         get { imp_getBlock(implementation) }
         nonmutating set {
