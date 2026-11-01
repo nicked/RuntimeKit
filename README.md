@@ -10,6 +10,11 @@ RuntimeKit does _not_ add any reflection to Swift-only types.
 It only operates on types that are already visible to the runtime,
 namely classes and protocols defined in Objective-C or exposed from Swift using `@objc`.
 
+RuntimeKit also does not make the runtime safe.
+It gives the runtime a Swift interface, but does not remove all the sharp edges.
+For example, a method can be set to use an implementation with the wrong types, that will crash when called.
+Knowledge of how the Objective-C runtime works is still required.
+
 * [Installation instructions](#installation)
 * [API reference](https://swiftpackageindex.com/nicked/RuntimeKit/main/documentation/runtimekit)
 
@@ -142,7 +147,7 @@ let obj = NSObject()
 // -- would crash with: class is not key value coding-compliant for the key foo.
 
 // Create a method body
-let body: @convention(block) (AnyClass) -> Int = { _ in
+let body: @convention(block) (AnyObject) -> Int = { _ in
     return 123
 }
 
@@ -177,7 +182,7 @@ m1.swizzle(with: m2)
 // or replace an implementation directly:
 m1.implementationBlock = { _ in
     return 999
-} as @convention(block) (AnyClass) -> Int
+} as @convention(block) (AnyObject) -> Int
 ```
 
 
@@ -210,9 +215,9 @@ For example, the encoding `^{CGPoint="x"d"y"d}` can be parsed into:
 ]))
 ```
 
-A parsed `TypeEncoding` can also be re-encoded into an encoding string which is identical to the original.
+A parsed `TypeEncoding` can also be re-encoded into an encoding string that is identical to the original.
 This lossless round-trip encoding has been tested on 660,000+ type encodings from all the classes and protocols in macOS.
-If you find an encoding from the runtime which cannot be parsed successfully, please [file a bug](https://github.com/nicked/RuntimeKit/issues/new).
+If you find an encoding from the runtime that cannot be parsed successfully, please [file a bug](https://github.com/nicked/RuntimeKit/issues/new).
 
 The related `MethodTypeEncodings` struct represents the types encoded in a method signature.
 
@@ -253,6 +258,30 @@ Avoid using `count` on these member iterators if you plan to loop through them a
 
 See my [post on iterator performance](https://ko9.org/posts/swift-runtime-2-performance/) for all the details.
 
+### Benchmarks
+
+These compare RuntimeKit with the same code written using the runtime C functions directly.
+Each benchmark visits every class or protocol in the runtime.
+The values are the difference in median CPU time from the C functions (lower is faster):
+
+| Iterate all      | `forEach` | `for-in` |
+|:-----------------|----------:|---------:|
+| Classes          |       -6% |      -3% |
+| Class methods    |       -2% |      +6% |
+| Class properties |        0% |     +13% |
+| Class ivars      |        0% |     +15% |
+| Class protocols  |      -15% |      +3% |
+| Protocols        |      -18% |     -16% |
+| Protocol methods |       +3% |      +3% |
+
+`forEach` is as fast as the C functions, and `for-in` is up to 15% slower.
+Neither makes more heap allocations than the C functions.
+
+The benchmarks are a separate package in the `Benchmarks` directory. To run them from the root of the repo:
+
+```sh
+swift package --package-path Benchmarks benchmark
+```
 
 
 ## Installation
