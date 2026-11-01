@@ -51,6 +51,32 @@ final class TypeEncodingTests: XCTestCase {
         // From std::vector ivars, where "" is the empty name of the next field
         let encoding = #"{vector<id>="__begin_"^@"__end_"^@""{?="__cap_"^@}}"#
         XCTAssertEqual(TypeEncoding(encoding)?.encoded, encoding)
+        XCTAssertEqual(TypeEncoding(encoding), .struct("vector<id>", [
+            .init("__begin_", type: .pointer(to: .id)),
+            .init("__end_", type: .pointer(to: .id)),
+            .init("", type: .struct("?", [.init("__cap_", type: .pointer(to: .id))])),
+        ]))
+    }
+
+
+    func testObjectInNamedField() {
+        // A field name follows the class name
+        let className = #"{?="a"@"NSString""b"i}"#
+        XCTAssertEqual(TypeEncoding(className), .struct("?", [.init("a", type: .object("NSString")), .init("b", type: .int)]))
+        XCTAssertEqual(TypeEncoding(className)?.encoded, className)
+
+        // A type follows the quoted string, so it is the next field name
+        let fieldName = #"{?="a"@"b"i}"#
+        XCTAssertEqual(TypeEncoding(fieldName), .struct("?", [.init("a", type: .id), .init("b", type: .int)]))
+        XCTAssertEqual(TypeEncoding(fieldName)?.encoded, fieldName)
+
+        // The end of the struct or union follows the class name
+        let lastField = #"(?="a"i"b"@"NSString")"#
+        XCTAssertEqual(TypeEncoding(lastField), .union("?", [.init("a", type: .int), .init("b", type: .object("NSString"))]))
+        XCTAssertEqual(TypeEncoding(lastField)?.encoded, lastField)
+
+        // Fields without names can't be ambiguous
+        XCTAssertEqual(TypeEncoding(#"{?=@"NSString"i}"#), .struct("?", .object("NSString"), .int))
     }
 
 

@@ -172,7 +172,7 @@ extension TypeEncoding {
 
         init?(_ typeEnc: inout Substring) throws {
             let name = typeEnc.parseStr()
-            let type = try typeEnc.parseOptionalTypeEncoding()
+            let type = try typeEnc.parseOptionalTypeEncoding(inNamedField: name != nil)
             if name == nil, type == nil {
                 return nil
             }

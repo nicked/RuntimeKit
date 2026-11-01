@@ -17,7 +17,8 @@ extension Substring {
 
     /// Attempts to parse a type encoding, returns `nil` if no type is found.
     /// Throws if an invalid character or type is found.
-    mutating func parseOptionalTypeEncoding() throws -> TypeEncoding? {
+    /// - Parameter inNamedField: Whether the type is in a struct or union field that has a name.
+    mutating func parseOptionalTypeEncoding(inNamedField: Bool = false) throws -> TypeEncoding? {
         // Could be an empty type encoding
         guard let first else {
             return nil
@@ -28,12 +29,13 @@ extension Substring {
             case "]", "}", ")", "\"", ",", ">", "0"..."9":
                 return nil
             default:
-                return try parseTypeEncoding()
+                return try parseTypeEncoding(inNamedField: inNamedField)
         }
     }
 
     /// Attempts to parse a type encoding, throws if an invalid character or type is found.
-    mutating func parseTypeEncoding() throws -> TypeEncoding {
+    /// - Parameter inNamedField: Whether the type is in a struct or union field that has a name.
+    mutating func parseTypeEncoding(inNamedField: Bool = false) throws -> TypeEncoding {
         guard let firstChar = popFirst() else {
             throw ParseError.unexpectedEnd
         }
@@ -62,21 +64,21 @@ extension Substring {
             case ":": return .selector
             case "?": return .unknown
 
-            case "@": return try parseObject()
+            case "@": return try parseObject(inNamedField: inNamedField)
             case "[": return try parseArray()
             case "{": return try parseCompoundType(isStruct: true)
             case "(": return try parseCompoundType(isStruct: false)
             case "b": return .bitfield(try? parseInt())
-            case "^": return try .pointer(to: parseOptionalTypeEncoding())
+            case "^": return try .pointer(to: parseOptionalTypeEncoding(inNamedField: inNamedField))
 
-            case "r": return try .const(parseTypeEncoding())
-            case "A": return try .atomic(parseTypeEncoding())
-            case "n": return try .in(parseTypeEncoding())
-            case "o": return try .out(parseTypeEncoding())
-            case "N": return try .inOut(parseTypeEncoding())
-            case "V": return try .oneWay(parseTypeEncoding())
-            case "O": return try .byCopy(parseTypeEncoding())
-            case "R": return try .byRef(parseTypeEncoding())
+            case "r": return try .const(parseTypeEncoding(inNamedField: inNamedField))
+            case "A": return try .atomic(parseTypeEncoding(inNamedField: inNamedField))
+            case "n": return try .in(parseTypeEncoding(inNamedField: inNamedField))
+            case "o": return try .out(parseTypeEncoding(inNamedField: inNamedField))
+            case "N": return try .inOut(parseTypeEncoding(inNamedField: inNamedField))
+            case "V": return try .oneWay(parseTypeEncoding(inNamedField: inNamedField))
+            case "O": return try .byCopy(parseTypeEncoding(inNamedField: inNamedField))
+            case "R": return try .byRef(parseTypeEncoding(inNamedField: inNamedField))
 
             default:
                 throw ParseError.unknownCharacter
@@ -122,6 +124,15 @@ extension Substring {
             return String(removePrefix(upTo: idx))
         }
         return nil
+    }
+
+    /// Whether the encoding starts with a quoted string that a type follows, e.g. `"x"i`.
+    func startsWithQuotedStringBeforeType() -> Bool {
+        guard first == "\"", let closingQuote = dropFirst().firstIndex(of: "\"") else {
+            return false
+        }
+        let next = index(after: closingQuote)
+        return next < endIndex && !["\"", "}", ")"].contains(self[next])
     }
 
     /// Parses an unquoted string up until any of the specified characters.
@@ -172,16 +183,23 @@ extension Substring {
     /// Could also parse a block type.
     /// An object encoding can have an optional quoted class name and optional angle bracket-delimited protocol names.
     /// Example: `@"NSObject<NSCopying><NSCoding>"`
-    mutating func parseObject() throws -> TypeEncoding {
+    /// - Parameter inNamedField: Whether the object is in a struct or union field that has a name.
+    mutating func parseObject(inNamedField: Bool = false) throws -> TypeEncoding {
         if parseChar("?") {     // '@?' = block
             return try parseBlock()
+        }
+
+        // Each named field starts with a quoted name, so in `"a"@"x"…`, `"x"` can be a class name or the next field name.
+        // If a type follows `"x"`, then `"x"` is the next field name, and this object is `id`.
+        // If another field name or the end of the struct follows, then `"x"` is the class name.
+        if inNamedField, startsWithQuotedStringBeforeType() {
+            return .id
         }
 
         guard let names = parseStr() else {
             return .id
         }
         // Keep an empty name so that `@""` re-encodes as `@""` and not as `@`.
-        // This occurs in struct fields such as `"__end_"^@""{?=...}`.
         guard !names.isEmpty else {
             return .object("")
         }
