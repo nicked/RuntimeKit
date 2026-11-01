@@ -49,13 +49,18 @@ extension ObjCProtocol {
     /// Details about a single protocol method.
     public struct MethodDetails: Equatable, CustomStringConvertible, CustomDebugStringConvertible {
         public let selector: Selector
-        public let types: MethodTypeEncodings?
         public let isRequired: Bool
         public let isInstanceMethod: Bool
+        @usableFromInline let storage: Storage
+
+        @usableFromInline enum Storage {
+            case runtime(Protocol)
+            case parsed(MethodTypeEncodings?)
+        }
 
         public init(selector: Selector, types: MethodTypeEncodings?, isRequired: Bool, isInstanceMethod: Bool) {
             self.selector = selector
-            self.types = types
+            self.storage = .parsed(types)
             self.isRequired = isRequired
             self.isInstanceMethod = isInstanceMethod
         }
@@ -66,9 +71,33 @@ extension ObjCProtocol {
                 return nil
             }
             self.selector = selector
-            self.types = desc.types.flatMap { MethodTypeEncodings(String(cString: $0)) }
+            self.storage = .parsed(desc.types.flatMap { MethodTypeEncodings(String(cString: $0)) })
             self.isRequired = isRequired
             self.isInstanceMethod = isInstanceMethod
+        }
+
+        @inlinable init(selector: Selector, on proto: Protocol, isRequired: Bool, isInstanceMethod: Bool) {
+            self.selector = selector
+            self.storage = .runtime(proto)
+            self.isRequired = isRequired
+            self.isInstanceMethod = isInstanceMethod
+        }
+
+        public var types: MethodTypeEncodings? {
+            switch storage {
+                case .runtime(let proto):
+                    protocol_getMethodDescription(proto, selector, isRequired, isInstanceMethod)
+                        .types.flatMap { MethodTypeEncodings(String(cString: $0)) }
+                case .parsed(let types):
+                    types
+            }
+        }
+
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.selector == rhs.selector
+                && lhs.isRequired == rhs.isRequired
+                && lhs.isInstanceMethod == rhs.isInstanceMethod
+                && lhs.types == rhs.types
         }
 
         public var description: String {

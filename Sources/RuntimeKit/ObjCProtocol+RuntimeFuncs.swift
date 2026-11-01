@@ -55,7 +55,7 @@ public extension ObjCProtocol {
         }
 
         @inlinable public func wrap(_ desc: objc_method_description) -> ObjCProtocol.MethodDetails {
-            ObjCProtocol.MethodDetails(desc, isRequired: isRequired, isInstanceMethod: isInstance)!
+            ObjCProtocol.MethodDetails(selector: desc.name!, on: proto.proto, isRequired: isRequired, isInstanceMethod: isInstance)
         }
     }
 
