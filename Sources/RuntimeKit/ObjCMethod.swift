@@ -46,8 +46,8 @@ public struct ObjCMethod {
         method_copyReturnType(method).toTypeEncodingAndFree()
     }
 
-    public var signature: MethodSignature {
-        MethodSignature(with: types)!
+    public var signature: MethodSignature? {
+        MethodSignature(with: types)
     }
 
 

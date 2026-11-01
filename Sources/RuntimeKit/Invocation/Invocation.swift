@@ -17,9 +17,13 @@ public struct Invocation {
         self.inner = Self.castCls.invocation(with: methodSignature.inner)
     }
 
-    /// Returns an Invocation able to construct messages using a given method.
-    public init(method: ObjCMethod) {
-        self.init(methodSignature: method.signature)
+    /// Returns an Invocation able to construct messages using a given method,
+    /// or `nil` if MethodSignature cannot parse the type encodings of the method.
+    public init?(method: ObjCMethod) {
+        guard let signature = method.signature else {
+            return nil
+        }
+        self.init(methodSignature: signature)
     }
 
 

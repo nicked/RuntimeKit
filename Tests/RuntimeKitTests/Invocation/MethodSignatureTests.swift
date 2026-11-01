@@ -26,4 +26,19 @@ final class MethodSignatureTests: XCTestCase {
         XCTAssertNil(MethodSignature(with: MethodTypeEncodings()))
     }
 
+    // NSMethodSignature does not support unions
+    func testMethodSignatureWithUnion() throws {
+        try withTemporaryClass { cls in
+            let sel = Selector(("unionMethod"))
+            let types = MethodTypeEncodings.method(returning: .union("?", [.init(type: .int)]))
+            let impl: @convention(block) (AnyObject) -> Void = { _ in }
+            XCTAssert(cls.methods.add(sel, types: types, block: impl))
+
+            let method = try XCTUnwrap(cls.methods[sel])
+            XCTAssertEqual(method.types.encoded, "(?=i)@:")
+            XCTAssertNil(method.signature)
+            XCTAssertNil(Invocation(method: method))
+        }
+    }
+
 }
