@@ -11,6 +11,9 @@ let package = Package(
             targets: ["RuntimeKit"]
         ),
     ],
+    dependencies: [
+		.package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.0.0")),
+    ],
     targets: [
         .target(
             name: "RuntimeKit",
@@ -24,6 +27,17 @@ let package = Package(
         .testTarget(
             name: "RuntimeKitTests",
             dependencies: ["RuntimeKit"]
+        ),
+        .executableTarget(
+            name: "RuntimeKitBenchmarks",
+            dependencies: [
+                .product(name: "Benchmark", package: "benchmark"),
+                "RuntimeKit",
+            ],
+            path: "Benchmarks/Benchmarks",
+            plugins: [
+                .plugin(name: "BenchmarkPlugin", package: "benchmark")
+            ]
         ),
     ]
 )
