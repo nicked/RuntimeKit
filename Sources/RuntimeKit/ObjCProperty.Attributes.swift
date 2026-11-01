@@ -23,8 +23,12 @@ extension ObjCProperty {
         case ivar(String)
 
         init?(_ description: String) {
+            self.init(Substring(description))
+        }
+
+        init?(_ description: Substring) {
             guard let first = description.first else { return nil }
-            let rest = String(description.dropFirst())
+            let rest = description.dropFirst()
 
             switch first {
                 case "T": self = .type(TypeEncoding(rest) ?? .empty)
@@ -34,9 +38,9 @@ extension ObjCProperty {
                 case "&": self = .retain
                 case "W": self = .weak
                 case "D": self = .dynamic
-                case "G" where !rest.isEmpty: self = .getter(rest)
-                case "S" where !rest.isEmpty: self = .setter(rest)
-                case "V" where !rest.isEmpty: self = .ivar(rest)
+                case "G" where !rest.isEmpty: self = .getter(String(rest))
+                case "S" where !rest.isEmpty: self = .setter(String(rest))
+                case "V" where !rest.isEmpty: self = .ivar(String(rest))
                 default: return nil
             }
         }
@@ -94,15 +98,13 @@ extension ObjCProperty {
 
         /// Parses attributes from a property description string, e.g. "T@,R,V_name"
         init(_ attribsStr: String) {
-            var attribsStr = attribsStr
-            self.type = TypeEncoding(propertyAttributes: &attribsStr) ?? .empty
+            var attribs = Substring(attribsStr)
+            self.type = TypeEncoding(propertyAttributes: &attribs) ?? .empty
 
-            let attribs = attribsStr
-                .split(separator: ",")
-                .map(String.init)
-                .compactMap(Attribute.init)
-
-            for attrib in attribs {
+            for part in attribs.split(separator: ",") {
+                guard let attrib = Attribute(part) else {
+                    continue
+                }
                 switch attrib {
                     case .readOnly: readOnly = true
                     case .nonAtomic: nonAtomic = true

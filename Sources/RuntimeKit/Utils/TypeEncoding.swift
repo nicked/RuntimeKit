@@ -79,11 +79,15 @@ extension TypeEncoding: LosslessStringConvertible {
     ///
     /// - Returns: Nil if the string does not contain a single valid type encoding.
     public init?(_ description: String) {
-        guard !description.isEmpty else {
+        self.init(Substring(description))
+    }
+
+    init?(_ encoding: Substring) {
+        guard !encoding.isEmpty else {
             self = .empty
             return
         }
-        var encoding = Substring(description)
+        var encoding = encoding
         guard let parsed = try? encoding.parseTypeEncoding(), encoding.isEmpty else {
             return nil
         }
@@ -94,7 +98,7 @@ extension TypeEncoding: LosslessStringConvertible {
 extension TypeEncoding {
     /// Parse a type encoding from a property attributes string ("T<type enc>,...").
     /// After a successful parsing, `propertyAttributes` will contain the remainder of the attributes with the type encoding removed.
-    public init?(propertyAttributes: inout String) {
+    public init?(propertyAttributes: inout Substring) {
         guard propertyAttributes.first == "T" else {
             return nil
         }
@@ -103,7 +107,7 @@ extension TypeEncoding {
         var encoding = propertyAttributes.dropFirst()
         guard encoding.first != "," else {
             // Got a "T,X,Y,Z" with no actual encoding, just drop the T and first comma and return the rest
-            propertyAttributes = String(encoding.dropFirst())
+            propertyAttributes = encoding.dropFirst()
             self = .empty
             return
         }
@@ -115,7 +119,7 @@ extension TypeEncoding {
         }
 
         // Remove leading comma
-        propertyAttributes = String(encoding.dropFirst())
+        propertyAttributes = encoding.dropFirst()
         self = type
     }
 }

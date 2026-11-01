@@ -128,7 +128,7 @@ final class TypeEncodingTests: XCTestCase {
         }
 
         // Can't just test property.attributes.description == attribs because attributes can be re-encoded in a different order
-        var otherAttribs = attribs
+        var otherAttribs = Substring(attribs)
         if let type = TypeEncoding(propertyAttributes: &otherAttribs) {
             if otherAttribs.isEmpty {
                 XCTAssertEqual("T\(type)", attribs)
