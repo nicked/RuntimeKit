@@ -11,8 +11,8 @@ import Foundation
 public extension ObjCClass {
 
     /// Returns all instance variables of this class, not including those on superclasses.
-    @inlinable var ivars: RuntimeList<Ivars> {
-        RuntimeList(Ivars(on: self))
+    @inlinable var ivars: Ivars {
+        Ivars(on: self)
     }
 
 }

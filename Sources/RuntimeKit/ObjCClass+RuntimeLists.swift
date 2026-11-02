@@ -8,112 +8,141 @@
 import Foundation
 
 
-public extension RuntimeList where F: RuntimeClassFuncs {
+public extension RuntimeClassList {
     /// Returns all items of this class and any superclasses up to but not including `topmostClass`.
     ///
     /// If `topmostClass` is `nil`, all items are returned, even those of the root class.
-    func upTo(_ topmostClass: ObjCClass?) -> some Sequence<F.WrapperType> {
+    func upTo(_ topmostClass: ObjCClass?) -> some Sequence<Element> {
         // Lists of class members (e.g. `classMethods`) are on the metaclass,
         // so the traversal must stop at the metaclass of `topmostClass`.
         var topmostClass = topmostClass
-        if funcs.cls.isMetaClass, let top = topmostClass, !top.isMetaClass {
+        if cls.isMetaClass, let top = topmostClass, !top.isMetaClass {
             topmostClass = top.metaClass
         }
-        return funcs.cls.superclasses(excluding: topmostClass, includeSelf: true)
+        return cls.superclasses(excluding: topmostClass, includeSelf: true)
             .reversed()
-            .map { $0[keyPath: F.keyPath] }
+            .map { $0[keyPath: Self.keyPath] }
             .joined()
     }
 
     /// Returns all items of this class and any superclasses up to but not including `topmostClass`.
     ///
     /// If `topmostClass` is `nil`, all items are returned, even those of the root class.
-    func upTo(_ topmostClass: AnyClass) -> some Sequence<F.WrapperType> {
+    func upTo(_ topmostClass: AnyClass) -> some Sequence<Element> {
         upTo(ObjCClass(topmostClass))
     }
 }
 
 
-@_documentation(visibility: internal)
 public extension ObjCClass {
 
-    struct Ivars: RuntimeClassFuncs {
+    /// The instance variables of a class.
+    struct Ivars: RuntimeClassList {
+        public typealias Element = ObjCIvar
+
+        @_documentation(visibility: internal)
         public let cls: ObjCClass
 
-        @inlinable public init(on cls: ObjCClass) {
+        @inlinable init(on cls: ObjCClass) {
             self.cls = cls
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<Ivar>? {
             class_copyIvarList(cls.cls, &count)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: String) -> Ivar? {
             class_getInstanceVariable(cls.cls, name)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ ivar: Ivar) -> ObjCIvar {
             ObjCIvar(ivar)
         }
 
+        @_documentation(visibility: internal)
         public static let keyPath = \ObjCClass.ivars
     }
 
-    struct Properties: RuntimeClassFuncs {
+    /// The instance or class properties of a class.
+    struct Properties: RuntimeClassList {
+        public typealias Element = ObjCProperty
+
+        @_documentation(visibility: internal)
         public let cls: ObjCClass
 
-        @inlinable public init(on cls: ObjCClass) {
+        @inlinable init(on cls: ObjCClass) {
             self.cls = cls
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<objc_property_t>? {
             class_copyPropertyList(cls.cls, &count)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: String) -> objc_property_t? {
             class_getProperty(cls.cls, name)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ prop: objc_property_t) -> ObjCProperty {
             ObjCProperty(prop)
         }
 
+        @_documentation(visibility: internal)
         public static let keyPath = \ObjCClass.properties
     }
 
-    struct Methods: RuntimeClassFuncs {
+    /// The instance or class methods of a class.
+    struct Methods: RuntimeClassList {
+        public typealias Element = ObjCMethod
+
+        @_documentation(visibility: internal)
         public let cls: ObjCClass
 
-        @inlinable public init(on cls: ObjCClass) {
+        @inlinable init(on cls: ObjCClass) {
             self.cls = cls
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<Method>? {
             class_copyMethodList(cls.cls, &count)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: Selector) -> Method? {
             class_getInstanceMethod(cls.cls, name)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ method: Method) -> ObjCMethod {
             ObjCMethod(method)
         }
 
+        @_documentation(visibility: internal)
         public static let keyPath = \ObjCClass.methods
     }
 
-    struct Protocols: RuntimeClassFuncs {
+    /// The protocols that a class directly conforms to.
+    struct Protocols: RuntimeClassList {
+        public typealias Element = ObjCProtocol
+
+        @_documentation(visibility: internal)
         public let cls: ObjCClass
 
-        @inlinable public init(on cls: ObjCClass) {
+        @inlinable init(on cls: ObjCClass) {
             self.cls = cls
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<Protocol>? {
             UnsafeMutablePointer(mutating: class_copyProtocolList(cls.cls, &count))
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: String) -> Protocol? {
             guard let proto = objc_getProtocol(name) else {
                 return nil
@@ -121,40 +150,53 @@ public extension ObjCClass {
             return class_conformsToProtocol(cls.cls, proto) ? proto : nil
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ proto: Protocol) -> ObjCProtocol {
             ObjCProtocol(proto)
         }
 
+        @_documentation(visibility: internal)
         public static let keyPath = \ObjCClass.protocols
     }
 
-    struct All: RuntimeFuncs {
-        @inlinable public init() {}
+    /// All the classes registered in the runtime.
+    struct AllClasses: RuntimeList {
+        public typealias Element = ObjCClass
 
+        @inlinable init() {}
+
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<AnyClass>? {
             UnsafeMutablePointer(mutating: objc_copyClassList(&count))
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: String) -> AnyClass? {
             objc_lookUpClass(name)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ cls: AnyClass) -> ObjCClass {
             ObjCClass(cls)
         }
     }
 
-    struct Image: RuntimeFuncs {
-        public let imageName: String
+    /// The classes defined in a library or framework.
+    struct ImageClasses: RuntimeList {
+        public typealias Element = ObjCClass
 
-        @inlinable public init(named imageName: String) {
+        @usableFromInline let imageName: String
+
+        @inlinable init(named imageName: String) {
             self.imageName = imageName
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func createList(_ count: inout UInt32) -> UnsafeMutablePointer<UnsafePointer<CChar>>? {
             objc_copyClassNamesForImage(imageName, &count)
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func lookup(name: String) -> UnsafePointer<CChar>? {
             guard let cls = objc_lookUpClass(name), let clsImgName = class_getImageName(cls) else {
                 return nil
@@ -162,6 +204,7 @@ public extension ObjCClass {
             return String(cString: clsImgName) == imageName ? class_getName(cls) : nil
         }
 
+        @_documentation(visibility: internal)
         @inlinable public func wrap(_ name: UnsafePointer<CChar>) -> ObjCClass {
             // objc_copyClassNamesForImage skips the classes that the runtime ignores
             ObjCClass(objc_lookUpClass(name)!)

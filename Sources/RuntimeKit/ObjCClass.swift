@@ -82,13 +82,13 @@ public extension ObjCClass {
 public extension ObjCClass {
 
     /// A list of all the classes registered in the runtime.
-    @inlinable static var allClasses: RuntimeList<All> {
-        RuntimeList(All())
+    @inlinable static var allClasses: AllClasses {
+        AllClasses()
     }
 
     /// Returns all registered class definitions within a specified library or framework.
-    static func allClasses(in imageName: String) -> RuntimeList<Image> {
-        RuntimeList(Image(named: imageName))
+    static func allClasses(in imageName: String) -> ImageClasses {
+        ImageClasses(named: imageName)
     }
 
     /// Returns an array of the superclasses of this class up to but not including `topmostClass`.

@@ -38,49 +38,49 @@ public struct ObjCProtocol {
     // MARK: - Properties
 
     /// A list of the instance properties declared by the protocol.
-    @inlinable public var properties: RuntimeList<Properties> {
-        RuntimeList(Properties(on: self, isInstance: true))
+    @inlinable public var properties: Properties {
+        Properties(on: self, isInstance: true)
     }
 
     /// A list of the class properties declared by the protocol.
-    @inlinable public var classProperties: RuntimeList<Properties> {
-        RuntimeList(Properties(on: self, isInstance: false))
+    @inlinable public var classProperties: Properties {
+        Properties(on: self, isInstance: false)
     }
 
 
     // MARK: - Methods
 
     /// A list of the required instance methods declared by the protocol.
-    @inlinable public var requiredMethods: RuntimeList<Methods> {
-        RuntimeList(Methods(on: self, isRequired: true, isInstance: true))
+    @inlinable public var requiredMethods: Methods {
+        Methods(on: self, isRequired: true, isInstance: true)
     }
 
     /// A list of the optional instance methods declared by the protocol.
-    @inlinable public var optionalMethods: RuntimeList<Methods> {
-        RuntimeList(Methods(on: self, isRequired: false, isInstance: true))
+    @inlinable public var optionalMethods: Methods {
+        Methods(on: self, isRequired: false, isInstance: true)
     }
 
     /// A list of the required class methods declared by the protocol.
-    @inlinable public var requiredClassMethods: RuntimeList<Methods> {
-        RuntimeList(Methods(on: self, isRequired: true, isInstance: false))
+    @inlinable public var requiredClassMethods: Methods {
+        Methods(on: self, isRequired: true, isInstance: false)
     }
 
     /// A list of the optional class methods declared by the protocol.
-    @inlinable public var optionalClassMethods: RuntimeList<Methods> {
-        RuntimeList(Methods(on: self, isRequired: false, isInstance: false))
+    @inlinable public var optionalClassMethods: Methods {
+        Methods(on: self, isRequired: false, isInstance: false)
     }
 
-    
+
     // MARK: - Other protocols
 
     /// A list of the protocols adopted by the protocol.
-    @inlinable public var protocols: RuntimeList<Protocols> {
-        RuntimeList(Protocols(on: self))
+    @inlinable public var protocols: Protocols {
+        Protocols(on: self)
     }
 
     /// A list of all the protocols known to the runtime.
-    @inlinable public static var allProtocols: RuntimeList<All> {
-        RuntimeList(All())
+    @inlinable public static var allProtocols: AllProtocols {
+        AllProtocols()
     }
 }
 
@@ -105,9 +105,9 @@ extension ObjCProtocol: CustomDebugStringConvertible {
 }
 
 
-extension RuntimeList where F == ObjCProtocol.Protocols {
+extension ObjCProtocol.Protocols {
     /// Returns a boolean value that indicates whether this protocol conforms to another protocol.
     public func contains(_ other: ObjCProtocol) -> Bool {
-        protocol_conformsToProtocol(funcs.proto.proto, other.proto)
+        protocol_conformsToProtocol(proto.proto, other.proto)
     }
 }
