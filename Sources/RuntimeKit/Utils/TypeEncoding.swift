@@ -142,6 +142,16 @@ extension TypeEncoding {
         }
     }
 
+    /// Whether a value of this type is an Objective-C object that can be treated as `id`: an object, a class or a block.
+    public var isObject: Bool {
+        switch self {
+            case .object, .class, .block:
+                return true
+            default:
+                return false
+        }
+    }
+
     /// Strips off any type modifiers, e.g. `.const(.cString)` becomes just `.cString`.
     public var withoutModifiers: TypeEncoding {
         switch self {
@@ -154,7 +164,7 @@ extension TypeEncoding {
 
     /// Obtains the size and the alignment of the encoded type.
     /// Both are 0 if the runtime cannot get the size of the type (e.g. for `.empty` or a bitfield).
-    var sizeAndAlignment: (size: Int, alignment: Int) {
+    public var sizeAndAlignment: (size: Int, alignment: Int) {
         var sizeInfo = (0, 0)
         guard NSGetSizeAndAlignmentNoThrow(encoded, &sizeInfo.0, &sizeInfo.1) else {
             return (0, 0)

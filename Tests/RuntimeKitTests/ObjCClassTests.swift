@@ -246,6 +246,42 @@ final class ObjCClassTests: XCTestCase {
         XCTAssertNil(ObjCClass(named: clsName))
     }
 
+    func testIvarValues() throws {
+        let newCls = try XCTUnwrap(ObjCClass.create(
+            "IvarValuesClass",
+            superclass: nsObjCls,
+            ivars: [
+                .init("_char", type: .char),
+                .init("_point", type: .struct("CGPoint", .double, .double)),
+                .init("_obj", type: .id),
+            ]
+        ))
+        let charIvar = try XCTUnwrap(newCls.ivars["_char"])
+        let pointIvar = try XCTUnwrap(newCls.ivars["_point"])
+        let objIvar = try XCTUnwrap(newCls.ivars["_obj"])
+
+        // The instance must be destroyed before the class is disposed
+        do {
+            let obj = try XCTUnwrap(newCls.createInstance())
+            XCTAssertEqual(charIvar.value(on: obj, as: Int8.self), 0)
+            XCTAssertNil(objIvar.object(on: obj))
+
+            charIvar.setValue(Int8(42), on: obj)
+            pointIvar.setValue(CGPoint(x: 1, y: 2), on: obj)
+            let str = NSString(string: "value")
+            objIvar.setObject(str, on: obj)
+
+            XCTAssertEqual(charIvar.value(on: obj, as: Int8.self), 42)
+            XCTAssertEqual(pointIvar.value(on: obj, as: CGPoint.self), CGPoint(x: 1, y: 2))
+            XCTAssertIdentical(objIvar.object(on: obj), str)
+
+            objIvar.setObject(nil, on: obj)
+            XCTAssertNil(objIvar.object(on: obj))
+        }
+
+        newCls.dispose()
+    }
+
     func testAddMethod() throws {
         try withTemporaryClass { cls in
             let inst = try XCTUnwrap(cls.createInstance())
